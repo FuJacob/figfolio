@@ -20,28 +20,28 @@ type SocialLink = {
 const SOCIAL_LINKS: SocialLink[] = [
   {
     label: "LinkedIn",
-    href: "#linkedin",
+    href: "https://www.linkedin.com/in/fujacob/",
     icon: TbBrandLinkedin,
     isFeatured: true,
   },
   {
     label: "GitHub",
-    href: "#github",
+    href: "https://github.com/fujacob/",
     icon: TbBrandGithub,
   },
   {
     label: "X",
-    href: "#x",
+    href: "https://x.com/fujacobb/",
     icon: TbBrandX,
   },
   {
     label: "Email",
-    href: "mailto:hello@example.com",
+    href: "mailto:jjacobfu@gmail.com",
     icon: TbMail,
   },
   {
     label: "YouTube",
-    href: "#youtube",
+    href: "https://www.youtube.com/@jjacobfu",
     icon: TbBrandYoutube,
   },
 ];
@@ -55,6 +55,21 @@ const SOCIAL_LINKS: SocialLink[] = [
 export function SocialDock() {
   function stopCanvasInteraction(event: PointerEvent<HTMLElement>) {
     event.stopPropagation();
+  }
+
+  /**
+   * External profile links should not keep control of the opener window.
+   * Mail links are intentionally excluded because they launch an email client.
+   */
+  function getExternalLinkProps(href: string) {
+    if (href.startsWith("mailto:")) {
+      return {};
+    }
+
+    return {
+      rel: "noopener noreferrer",
+      target: "_blank",
+    };
   }
 
   return (
@@ -74,6 +89,7 @@ export function SocialDock() {
                   isFeatured ? "bg-dock-hover" : ""
                 }`}
                 href={href}
+                {...getExternalLinkProps(href)}
               >
                 <Icon aria-hidden="true" />
               </a>
