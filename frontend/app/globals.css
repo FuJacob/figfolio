@@ -3,23 +3,111 @@
 :root {
   --background: #f5f5f5;
   --foreground: #1e1e1e;
+  --stage-surround: #d8d8d8;
+  --canvas-grid-dot: #c5c5c5;
+  --canvas-selection: #0d99ff;
+  --node-text: #242424;
+  --image-frame-border: #bdbdbd;
+  --image-frame-surface: #fafafa;
+  --image-frame-mat: #282828;
+  --dock-surface: #ffffff;
+  --dock-border: #e4e4e7;
+  --dock-hover: #f4f4f5;
+  --dock-text: #09090b;
+  --figma-red: #f24e2e;
+  --figma-coral: #ff6258;
+  --figma-purple: #994ff3;
+  --figma-blue: #28aeea;
+  --figma-green: #2bcf83;
+  --fake-cursor-blue: #0d99ff;
+  --fake-cursor-purple: #994ff3;
+  --fake-cursor-green: #2bcf83;
+  --stage-shadow:
+    0 30px 90px -45px rgb(0 0 0 / 0.48),
+    0 0 0 1px rgb(0 0 0 / 0.08);
+  --dock-shadow:
+    0 18px 38px -26px rgb(24 24 27 / 0.55),
+    0 7px 18px -14px rgb(24 24 27 / 0.45);
+  --image-frame-shadow: 0 24px 44px -26px rgb(30 30 30 / 0.45);
+  --figma-mark-shadow: drop-shadow(-10px 14px 0 rgb(0 0 0 / 0.28));
+  --figma-shape-shadow: inset -8px 0 0 rgb(0 0 0 / 0.18);
+  --fake-cursor-shadow: drop-shadow(0 3px 4px rgb(0 0 0 / 0.28));
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sour-gummy), Arial, Helvetica, sans-serif;
+  --color-stage-surround: var(--stage-surround);
+  --color-canvas-grid-dot: var(--canvas-grid-dot);
+  --color-canvas-selection: var(--canvas-selection);
+  --color-node-text: var(--node-text);
+  --color-image-frame-border: var(--image-frame-border);
+  --color-image-frame-surface: var(--image-frame-surface);
+  --color-image-frame-mat: var(--image-frame-mat);
+  --color-dock-surface: var(--dock-surface);
+  --color-dock-border: var(--dock-border);
+  --color-dock-hover: var(--dock-hover);
+  --color-dock-text: var(--dock-text);
+  --color-figma-red: var(--figma-red);
+  --color-figma-coral: var(--figma-coral);
+  --color-figma-purple: var(--figma-purple);
+  --color-figma-blue: var(--figma-blue);
+  --color-figma-green: var(--figma-green);
+  --color-fake-cursor-blue: var(--fake-cursor-blue);
+  --color-fake-cursor-purple: var(--fake-cursor-purple);
+  --color-fake-cursor-green: var(--fake-cursor-green);
+  --font-sans: var(--font-sour-gummy), sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
 }
 
 html {
-  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
-  min-height: 100dvh;
+  height: 100dvh;
+  margin: 0;
   overflow: hidden;
+  overscroll-behavior: none;
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sour-gummy), sans-serif;
+}
+
+@keyframes fake-cursor-roam {
+  0% {
+    left: var(--cursor-point-0-x);
+    top: var(--cursor-point-0-y);
+    transform: rotate(-8deg);
+  }
+
+  12.5%,
+  25% {
+    left: var(--cursor-point-1-x);
+    top: var(--cursor-point-1-y);
+    transform: rotate(5deg);
+  }
+
+  37.5%,
+  50% {
+    left: var(--cursor-point-2-x);
+    top: var(--cursor-point-2-y);
+    transform: rotate(-3deg);
+  }
+
+  62.5%,
+  75% {
+    left: var(--cursor-point-3-x);
+    top: var(--cursor-point-3-y);
+    transform: rotate(8deg);
+  }
+
+  87.5%,
+  100% {
+    left: var(--cursor-point-0-x);
+    top: var(--cursor-point-0-y);
+    transform: rotate(-8deg);
+  }
 }

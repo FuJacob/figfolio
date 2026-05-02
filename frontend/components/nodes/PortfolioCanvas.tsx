@@ -2,6 +2,7 @@
 
 import { PointerEvent, useReducer } from "react";
 
+import { FakeCursorOverlay } from "@/components/cursors/FakeCursorOverlay";
 import {
   canvasReducer,
   initialCanvasState,
@@ -9,6 +10,7 @@ import {
 import { ImageNodeContent } from "@/components/nodes/renderers/ImageNodeContent";
 import { TextNodeContent } from "@/components/nodes/renderers/TextNodeContent";
 import type { NodeBounds, PortfolioNode, ResizeHandle } from "@/components/nodes/types";
+import { SocialDock } from "@/components/SocialDock";
 
 import { NodeFrame } from "./NodeFrame";
 
@@ -76,36 +78,40 @@ export function PortfolioCanvas() {
 
   return (
     <main
-      className="relative min-h-[100dvh] overflow-hidden bg-background text-foreground"
+      className="grid h-[100dvh] overflow-hidden bg-stage-surround text-foreground"
       onPointerDown={handleCanvasPointerDown}
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,#c5c5c5_2.5px,transparent_0)] bg-[length:40px_40px]"
-      />
       <section
-        aria-label="Portfolio canvas"
-        className="relative min-h-[100dvh] min-w-[900px]"
+        aria-label="Mobile portfolio canvas"
+        className="relative isolate h-full w-full max-w-[430px] justify-self-center overflow-hidden bg-background text-foreground sm:shadow-[var(--stage-shadow)]"
       >
-        {state.nodes.map((node) => (
-          <NodeFrame
-            key={node.id}
-            node={node}
-            isInteracting={state.interaction?.nodeId === node.id}
-            isSelected={state.selectedNodeId === node.id}
-            onNodePointerDown={handleNodePointerDown}
-            onPointerCancel={handlePointerEnd}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerEnd}
-            onResizePointerDown={handleResizePointerDown}
-          >
-            {node.kind === "text" ? (
-              <TextNodeContent node={node} />
-            ) : (
-              <ImageNodeContent node={node} />
-            )}
-          </NodeFrame>
-        ))}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,var(--color-canvas-grid-dot)_1.5px,transparent_0)] bg-[length:32px_32px]"
+        />
+        <div className="relative h-full w-full overflow-hidden">
+          {state.nodes.map((node) => (
+            <NodeFrame
+              key={node.id}
+              node={node}
+              isInteracting={state.interaction?.nodeId === node.id}
+              isSelected={state.selectedNodeId === node.id}
+              onNodePointerDown={handleNodePointerDown}
+              onPointerCancel={handlePointerEnd}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerEnd}
+              onResizePointerDown={handleResizePointerDown}
+            >
+              {node.kind === "text" ? (
+                <TextNodeContent node={node} />
+              ) : (
+                <ImageNodeContent node={node} />
+              )}
+            </NodeFrame>
+          ))}
+        </div>
+        <FakeCursorOverlay />
+        <SocialDock />
       </section>
     </main>
   );

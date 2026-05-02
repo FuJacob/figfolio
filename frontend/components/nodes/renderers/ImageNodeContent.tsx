@@ -15,9 +15,9 @@ export function ImageNodeContent({ node }: ImageNodeContentProps) {
   return (
     <figure
       aria-label={node.title}
-      className="m-0 h-full w-full rounded-[32px] border-[3px] border-[#bdbdbd] bg-[#fafafa] p-[clamp(18px,6%,30px)] shadow-[0_24px_44px_-26px_rgba(30,30,30,0.45)]"
+      className="m-0 h-full w-full rounded-[32px] border-[3px] border-image-frame-border bg-image-frame-surface p-8 shadow-[var(--image-frame-shadow)]"
     >
-      <div className="relative h-full w-full overflow-hidden rounded-xl bg-[#282828]">
+      <div className="relative h-full w-full overflow-hidden rounded-xl bg-image-frame-mat">
         {node.src ? (
           <Image
             fill
@@ -42,22 +42,22 @@ function FigmaMarkPreview() {
   return (
     <div
       aria-hidden="true"
-      className="absolute left-[7%] top-[6%] aspect-[1/1.45] w-[min(68%,230px)] [filter:drop-shadow(-10px_14px_0_rgba(0,0,0,0.28))]"
+      className="absolute left-[7%] top-[6%] aspect-[1/1.45] w-[min(68%,230px)] [filter:var(--figma-mark-shadow)]"
     >
       <span
-        className={`${shapeClass} left-0 top-0 rounded-l-[18px] bg-[#f24e2e] shadow-[inset_-8px_0_0_rgba(0,0,0,0.18)]`}
+        className={`${shapeClass} left-0 top-0 rounded-l-[18px] bg-figma-red shadow-[var(--figma-shape-shadow)]`}
       />
       <span
-        className={`${shapeClass} left-1/2 top-0 rounded-r-[18px] bg-[#ff6258] shadow-[inset_-8px_0_0_rgba(0,0,0,0.18)]`}
+        className={`${shapeClass} left-1/2 top-0 rounded-r-[18px] bg-figma-coral shadow-[var(--figma-shape-shadow)]`}
       />
       <span
-        className={`${shapeClass} left-0 top-[28%] rounded-l-[18px] bg-[#994ff3] shadow-[inset_-8px_0_0_rgba(0,0,0,0.18)]`}
+        className={`${shapeClass} left-0 top-[28%] rounded-l-[18px] bg-figma-purple shadow-[var(--figma-shape-shadow)]`}
       />
       <span
-        className={`${shapeClass} left-1/2 top-[28%] rounded-full bg-[#28aeea] shadow-[inset_-8px_0_0_rgba(0,0,0,0.18)]`}
+        className={`${shapeClass} left-1/2 top-[28%] rounded-full bg-figma-blue shadow-[var(--figma-shape-shadow)]`}
       />
       <span
-        className={`${shapeClass} left-0 top-[56%] rounded-b-full rounded-t-[18px] bg-[#2bcf83] shadow-[inset_-8px_0_0_rgba(0,0,0,0.18)]`}
+        className={`${shapeClass} left-0 top-[56%] rounded-b-full rounded-t-[18px] bg-figma-green shadow-[var(--figma-shape-shadow)]`}
       />
     </div>
   );
