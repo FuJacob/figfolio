@@ -18,17 +18,21 @@ export {
 export { useCanvasStore as useStore } from "./canvas/store";
 export type {
   Bounds,
+  BaseCanvasNode,
   CanvasLayout,
   CanvasLayouts,
   CanvasNode,
   CanvasNodeId,
   CanvasPoint,
   DragInteraction,
+  ImageCanvasNode,
+  ImageFitMode,
   LayoutMode,
   NodeInteraction,
   NodeType,
   ResizeHandle,
   ResizeInteraction,
   Size,
+  TextCanvasNode,
   ViewportPoint,
 } from "./canvas/types";

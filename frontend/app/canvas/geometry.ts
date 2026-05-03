@@ -9,6 +9,7 @@ import type {
   CanvasNode,
   ResizeHandle,
   Size,
+  TextCanvasNode,
   ViewportPoint,
 } from "./types";
 
@@ -34,7 +35,7 @@ export function snapSize(size: number): number {
  * Scales text from the node's base dimensions so repeated resize gestures do
  * not compound rounding error into the stored font size.
  */
-export function getScaledFontSize(node: CanvasNode, size: Size): number {
+export function getScaledFontSize(node: TextCanvasNode, size: Size): number {
   const widthScale = size.width / node.baseWidth;
   const heightScale = size.height / node.baseHeight;
   const nextFontSize = node.baseFontSize * Math.min(widthScale, heightScale);

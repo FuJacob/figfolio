@@ -1,87 +1,159 @@
-import type { CanvasLayout, CanvasNode, CanvasNodeId } from "./types";
+import type {
+  CanvasLayout,
+  CanvasNode,
+  CanvasNodeId,
+  ImageCanvasNode,
+  TextCanvasNode,
+} from "./types";
 
 const DESKTOP_NODES: CanvasNode[] = [
-  {
+  createTextNode({
     id: "headline",
-    type: "text",
     x: 80,
     y: 80,
     width: 320,
     height: 60,
-    baseWidth: 320,
-    baseHeight: 60,
     fontSize: 28,
-    baseFontSize: 28,
     value: "Design systems for fast teams",
-  },
-  {
+  }),
+  createTextNode({
     id: "subtitle",
-    type: "text",
     x: 80,
     y: 160,
     width: 360,
     height: 80,
-    baseWidth: 360,
-    baseHeight: 80,
     fontSize: 18,
-    baseFontSize: 18,
     value: "Ship clean interfaces with reusable components.",
-  },
-  {
-    id: "note",
-    type: "text",
-    x: 460,
-    y: 120,
-    width: 220,
-    height: 80,
-    baseWidth: 220,
-    baseHeight: 80,
-    fontSize: 16,
-    baseFontSize: 16,
-    value: "Drag me. I snap every 20px.",
-  },
+  }),
+  createImageNode({
+    id: "bridgewell",
+    alt: "Bridgewell logo",
+    src: "/companies/bridgewell.png",
+    x: 520,
+    y: 80,
+    width: 120,
+    height: 120,
+  }),
+  createImageNode({
+    id: "hubspot",
+    alt: "HubSpot logo",
+    src: "/companies/hubspot.png",
+    x: 660,
+    y: 80,
+    width: 120,
+    height: 120,
+  }),
+  createImageNode({
+    id: "kaimz",
+    alt: "Kaimz logo",
+    src: "/companies/kaimz.png",
+    x: 800,
+    y: 100,
+    width: 160,
+    height: 120,
+  }),
+  createImageNode({
+    id: "ramp",
+    alt: "Ramp logo",
+    src: "/companies/ramp.jpeg",
+    x: 520,
+    y: 240,
+    width: 120,
+    height: 120,
+  }),
+  createImageNode({
+    id: "uber",
+    alt: "Uber logo",
+    src: "/companies/uber.png",
+    x: 680,
+    y: 260,
+    width: 120,
+    height: 120,
+  }),
+  createImageNode({
+    id: "waterloo",
+    alt: "University of Waterloo logo",
+    src: "/companies/waterloo.png",
+    x: 840,
+    y: 260,
+    width: 120,
+    height: 120,
+  }),
 ];
 
 const MOBILE_NODES: CanvasNode[] = [
-  {
+  createTextNode({
     id: "headline",
-    type: "text",
     x: 20,
-    y: 120,
+    y: 80,
     width: 280,
     height: 80,
-    baseWidth: 280,
-    baseHeight: 80,
     fontSize: 26,
-    baseFontSize: 26,
     value: "Design systems for fast teams",
-  },
-  {
+  }),
+  createTextNode({
     id: "subtitle",
-    type: "text",
     x: 20,
-    y: 220,
+    y: 180,
     width: 280,
     height: 100,
-    baseWidth: 280,
-    baseHeight: 100,
     fontSize: 18,
-    baseFontSize: 18,
     value: "Ship clean interfaces with reusable components.",
-  },
-  {
-    id: "note",
-    type: "text",
-    x: 40,
-    y: 340,
-    width: 220,
-    height: 80,
-    baseWidth: 220,
-    baseHeight: 80,
-    fontSize: 16,
-    baseFontSize: 16,
-    value: "Drag me. I snap every 20px.",
-  },
+  }),
+  createImageNode({
+    id: "bridgewell",
+    alt: "Bridgewell logo",
+    src: "/companies/bridgewell.png",
+    x: 20,
+    y: 320,
+    width: 100,
+    height: 100,
+  }),
+  createImageNode({
+    id: "hubspot",
+    alt: "HubSpot logo",
+    src: "/companies/hubspot.png",
+    x: 160,
+    y: 320,
+    width: 100,
+    height: 100,
+  }),
+  createImageNode({
+    id: "kaimz",
+    alt: "Kaimz logo",
+    src: "/companies/kaimz.png",
+    x: 20,
+    y: 440,
+    width: 120,
+    height: 100,
+  }),
+  createImageNode({
+    id: "ramp",
+    alt: "Ramp logo",
+    src: "/companies/ramp.jpeg",
+    x: 160,
+    y: 440,
+    width: 100,
+    height: 100,
+  }),
+  createImageNode({
+    id: "uber",
+    alt: "Uber logo",
+    src: "/companies/uber.png",
+    x: 20,
+    y: 560,
+    width: 100,
+    height: 100,
+  }),
+  createImageNode({
+    id: "waterloo",
+    alt: "University of Waterloo logo",
+    src: "/companies/waterloo.png",
+    x: 160,
+    y: 560,
+    width: 100,
+    height: 100,
+  }),
 ];
 
 /**
@@ -94,6 +166,32 @@ function createLayout(nodes: CanvasNode[]): CanvasLayout {
     nodes: Object.fromEntries(
       nodes.map((node) => [node.id, cloneNode(node)]),
     ) as Record<CanvasNodeId, CanvasNode>,
+  };
+}
+
+function createTextNode(
+  input: Omit<TextCanvasNode, "baseFontSize" | "baseHeight" | "baseWidth" | "type">,
+): TextCanvasNode {
+  return {
+    ...input,
+    type: "text",
+    baseWidth: input.width,
+    baseHeight: input.height,
+    baseFontSize: input.fontSize,
+  };
+}
+
+function createImageNode(
+  input: Omit<ImageCanvasNode, "baseHeight" | "baseWidth" | "fit" | "type"> & {
+    fit?: ImageCanvasNode["fit"];
+  },
+): ImageCanvasNode {
+  return {
+    ...input,
+    type: "image",
+    baseWidth: input.width,
+    baseHeight: input.height,
+    fit: input.fit ?? "cover",
   };
 }
 

@@ -92,17 +92,46 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       const nextHeight = snapSize(bounds.height);
       const nextX = snapToGrid(bounds.x);
       const nextY = snapToGrid(bounds.y);
-      const nextFontSize = getScaledFontSize(node, {
-        width: nextWidth,
-        height: nextHeight,
-      });
+
+      if (node.type === "text") {
+        const nextFontSize = getScaledFontSize(node, {
+          width: nextWidth,
+          height: nextHeight,
+        });
+
+        if (
+          node.x === nextX &&
+          node.y === nextY &&
+          node.width === nextWidth &&
+          node.height === nextHeight &&
+          node.fontSize === nextFontSize
+        ) {
+          return state;
+        }
+
+        return {
+          layouts: updateActiveLayout(state, {
+            ...layout,
+            nodes: {
+              ...layout.nodes,
+              [id]: {
+                ...node,
+                x: nextX,
+                y: nextY,
+                width: nextWidth,
+                height: nextHeight,
+                fontSize: nextFontSize,
+              },
+            },
+          }),
+        };
+      }
 
       if (
         node.x === nextX &&
         node.y === nextY &&
         node.width === nextWidth &&
-        node.height === nextHeight &&
-        node.fontSize === nextFontSize
+        node.height === nextHeight
       ) {
         return state;
       }
@@ -118,7 +147,6 @@ export const useCanvasStore = create<CanvasState>((set) => ({
               y: nextY,
               width: nextWidth,
               height: nextHeight,
-              fontSize: nextFontSize,
             },
           },
         }),

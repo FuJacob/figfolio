@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
 import { useCanvasStore } from "../store";
 import { CanvasGrid } from "./CanvasGrid";
-import { CanvasTextNode } from "./CanvasTextNode";
+import { CanvasNode } from "./CanvasNode";
 
 export function CanvasEditor() {
   const layoutMode = useResponsiveLayoutMode();
@@ -28,7 +28,7 @@ export function CanvasEditor() {
 
       <div className="relative h-full w-full">
         {nodeIds.map((nodeId) => (
-          <CanvasTextNode key={nodeId} nodeId={nodeId} />
+          <CanvasNode key={nodeId} nodeId={nodeId} />
         ))}
       </div>
     </main>

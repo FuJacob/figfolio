@@ -1,6 +1,7 @@
 export type CanvasNodeId = string;
-export type NodeType = "text";
+export type NodeType = "text" | "image";
 export type LayoutMode = "mobile" | "desktop";
+export type ImageFitMode = "contain" | "cover";
 
 export type CanvasPoint = {
   x: number;
@@ -19,15 +20,28 @@ export type Size = {
 
 export type Bounds = CanvasPoint & Size;
 
-export type CanvasNode = Bounds & {
+export type BaseCanvasNode = Bounds & {
   id: CanvasNodeId;
   type: NodeType;
   baseWidth: number;
   baseHeight: number;
+};
+
+export type TextCanvasNode = BaseCanvasNode & {
+  type: "text";
   fontSize: number;
   baseFontSize: number;
   value: string;
 };
+
+export type ImageCanvasNode = BaseCanvasNode & {
+  type: "image";
+  alt: string;
+  fit: ImageFitMode;
+  src: string;
+};
+
+export type CanvasNode = TextCanvasNode | ImageCanvasNode;
 
 export type CanvasLayout = {
   nodeIds: CanvasNodeId[];
