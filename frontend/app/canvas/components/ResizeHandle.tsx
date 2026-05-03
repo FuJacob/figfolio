@@ -22,16 +22,16 @@ const HANDLE_PRESENTATION_BY_HANDLE: Record<
   ResizeHandlePresentation
 > = {
   "top-left": {
-    className: "-left-2.5 -top-2.5 size-5 cursor-nwse-resize",
+    className: "-left-2 -top-2 size-4 cursor-nwse-resize",
   },
   "top-right": {
-    className: "-right-2.5 -top-2.5 size-5 cursor-nesw-resize",
+    className: "-right-2 -top-2 size-4 cursor-nesw-resize",
   },
   "bottom-right": {
-    className: "-bottom-2.5 -right-2.5 size-5 cursor-nwse-resize",
+    className: "-bottom-2 -right-2 size-4 cursor-nwse-resize",
   },
   "bottom-left": {
-    className: "-bottom-2.5 -left-2.5 size-5 cursor-nesw-resize",
+    className: "-bottom-2 -left-2 size-4 cursor-nesw-resize",
   },
 };
 
