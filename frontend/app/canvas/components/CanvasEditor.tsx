@@ -1,12 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
+import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
 import { useCanvasStore } from "../store";
 import { CanvasGrid } from "./CanvasGrid";
 import { CanvasTextNode } from "./CanvasTextNode";
 
 export function CanvasEditor() {
-  const nodeIds = useCanvasStore((state) => state.nodeIds);
+  const layoutMode = useResponsiveLayoutMode();
+  const nodeIds = useCanvasStore(
+    (state) => state.layouts[state.activeLayout].nodeIds,
+  );
   const clearSelection = useCanvasStore((state) => state.clearSelection);
+  const setActiveLayout = useCanvasStore((state) => state.setActiveLayout);
+
+  useEffect(() => {
+    setActiveLayout(layoutMode);
+  }, [layoutMode, setActiveLayout]);
 
   return (
     <main

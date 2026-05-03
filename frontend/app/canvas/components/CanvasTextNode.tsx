@@ -15,7 +15,9 @@ type CanvasTextNodeViewProps = {
 };
 
 export function CanvasTextNode({ nodeId }: CanvasTextNodeProps) {
-  const node = useCanvasStore((state) => state.nodes[nodeId]);
+  const node = useCanvasStore(
+    (state) => state.layouts[state.activeLayout].nodes[nodeId],
+  );
   const isSelected = useCanvasStore((state) => state.selectedNodeId === nodeId);
 
   if (!node) {
@@ -48,7 +50,7 @@ function CanvasTextNodeView({ isSelected, node }: CanvasTextNodeViewProps) {
       title={`${node.value} (${node.x}, ${node.y})`}
     >
       <div
-        className="h-full w-full overflow-hidden whitespace-pre-wrap "
+        className="h-full w-full overflow-hidden whitespace-pre-wrap"
         style={{
           fontSize: node.fontSize,
           lineHeight: TEXT_NODE_LINE_HEIGHT,

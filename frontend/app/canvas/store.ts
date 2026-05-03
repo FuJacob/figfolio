@@ -1,62 +1,34 @@
 import { create } from "zustand";
 import { getScaledFontSize, snapSize, snapToGrid } from "./geometry";
-import type { Bounds, CanvasNode, CanvasNodeId, CanvasPoint } from "./types";
+import { cloneLayout, LAYOUT_PRESETS } from "./layoutPresets";
+import type {
+  Bounds,
+  CanvasLayout,
+  CanvasLayouts,
+  CanvasNodeId,
+  CanvasPoint,
+  LayoutMode,
+} from "./types";
 
 type CanvasState = {
+  activeLayout: LayoutMode;
   clearSelection: () => void;
+  layouts: CanvasLayouts;
   moveNode: (id: CanvasNodeId, position: CanvasPoint) => void;
-  nodeIds: CanvasNodeId[];
-  nodes: Record<CanvasNodeId, CanvasNode>;
   resizeNode: (id: CanvasNodeId, bounds: Bounds) => void;
   selectedNodeId: CanvasNodeId | null;
+  setActiveLayout: (mode: LayoutMode) => void;
   selectNode: (id: CanvasNodeId) => void;
 };
 
-const INITIAL_NODES: Record<CanvasNodeId, CanvasNode> = {
-  headline: {
-    id: "headline",
-    type: "text",
-    x: 80,
-    y: 80,
-    width: 320,
-    height: 60,
-    baseWidth: 320,
-    baseHeight: 60,
-    fontSize: 28,
-    baseFontSize: 28,
-    value: "Design systems for fast teams",
-  },
-  subtitle: {
-    id: "subtitle",
-    type: "text",
-    x: 80,
-    y: 160,
-    width: 360,
-    height: 80,
-    baseWidth: 360,
-    baseHeight: 80,
-    fontSize: 18,
-    baseFontSize: 18,
-    value: "Ship clean interfaces with reusable components.",
-  },
-  note: {
-    id: "note",
-    type: "text",
-    x: 460,
-    y: 120,
-    width: 220,
-    height: 80,
-    baseWidth: 220,
-    baseHeight: 80,
-    fontSize: 16,
-    baseFontSize: 16,
-    value: "Drag me. I snap every 20px.",
-  },
+const INITIAL_LAYOUTS: CanvasLayouts = {
+  desktop: cloneLayout(LAYOUT_PRESETS.desktop),
+  mobile: cloneLayout(LAYOUT_PRESETS.mobile),
 };
 
 export const useCanvasStore = create<CanvasState>((set) => ({
-  nodeIds: Object.keys(INITIAL_NODES),
-  nodes: INITIAL_NODES,
+  activeLayout: "desktop",
+  layouts: INITIAL_LAYOUTS,
   selectedNodeId: null,
   clearSelection: () =>
     set((state) => {
@@ -66,9 +38,21 @@ export const useCanvasStore = create<CanvasState>((set) => ({
 
       return { selectedNodeId: null };
     }),
+  setActiveLayout: (mode) =>
+    set((state) => {
+      if (state.activeLayout === mode) {
+        return state;
+      }
+
+      return {
+        activeLayout: mode,
+        selectedNodeId: null,
+      };
+    }),
   moveNode: (id, position) =>
     set((state) => {
-      const node = state.nodes[id];
+      const layout = getActiveLayout(state);
+      const node = layout.nodes[id];
 
       if (!node) {
         return state;
@@ -82,19 +66,23 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       }
 
       return {
-        nodes: {
-          ...state.nodes,
-          [id]: {
-            ...node,
-            x: nextX,
-            y: nextY,
+        layouts: updateActiveLayout(state, {
+          ...layout,
+          nodes: {
+            ...layout.nodes,
+            [id]: {
+              ...node,
+              x: nextX,
+              y: nextY,
+            },
           },
-        },
+        }),
       };
     }),
   resizeNode: (id, bounds) =>
     set((state) => {
-      const node = state.nodes[id];
+      const layout = getActiveLayout(state);
+      const node = layout.nodes[id];
 
       if (!node) {
         return state;
@@ -106,7 +94,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       const nextY = snapToGrid(bounds.y);
       const nextFontSize = getScaledFontSize(node, {
         width: nextWidth,
-        height: nextHeight, 
+        height: nextHeight,
       });
 
       if (
@@ -120,25 +108,42 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       }
 
       return {
-        nodes: {
-          ...state.nodes,
-          [id]: {
-            ...node,
-            x: nextX,
-            y: nextY,
-            width: nextWidth,
-            height: nextHeight,
-            fontSize: nextFontSize,
+        layouts: updateActiveLayout(state, {
+          ...layout,
+          nodes: {
+            ...layout.nodes,
+            [id]: {
+              ...node,
+              x: nextX,
+              y: nextY,
+              width: nextWidth,
+              height: nextHeight,
+              fontSize: nextFontSize,
+            },
           },
-        },
+        }),
       };
     }),
   selectNode: (id) =>
     set((state) => {
-      if (!state.nodes[id] || state.selectedNodeId === id) {
+      if (!getActiveLayout(state).nodes[id] || state.selectedNodeId === id) {
         return state;
       }
 
       return { selectedNodeId: id };
     }),
 }));
+
+function getActiveLayout(state: Pick<CanvasState, "activeLayout" | "layouts">) {
+  return state.layouts[state.activeLayout];
+}
+
+function updateActiveLayout(
+  state: Pick<CanvasState, "activeLayout" | "layouts">,
+  layout: CanvasLayout,
+): CanvasLayouts {
+  return {
+    ...state.layouts,
+    [state.activeLayout]: layout,
+  };
+}

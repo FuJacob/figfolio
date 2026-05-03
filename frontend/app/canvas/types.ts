@@ -1,5 +1,6 @@
 export type CanvasNodeId = string;
 export type NodeType = "text";
+export type LayoutMode = "mobile" | "desktop";
 
 export type CanvasPoint = {
   x: number;
@@ -27,6 +28,13 @@ export type CanvasNode = Bounds & {
   baseFontSize: number;
   value: string;
 };
+
+export type CanvasLayout = {
+  nodeIds: CanvasNodeId[];
+  nodes: Record<CanvasNodeId, CanvasNode>;
+};
+
+export type CanvasLayouts = Record<LayoutMode, CanvasLayout>;
 
 export type ResizeHandle =
   | "top-left"

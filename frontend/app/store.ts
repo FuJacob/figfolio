@@ -1,4 +1,5 @@
 export {
+  DESKTOP_LAYOUT_MIN_WIDTH,
   GRID_DOT_COLOR,
   GRID_DOT_SIZE,
   GRID_SIZE,
@@ -17,10 +18,13 @@ export {
 export { useCanvasStore as useStore } from "./canvas/store";
 export type {
   Bounds,
+  CanvasLayout,
+  CanvasLayouts,
   CanvasNode,
   CanvasNodeId,
   CanvasPoint,
   DragInteraction,
+  LayoutMode,
   NodeInteraction,
   NodeType,
   ResizeHandle,
