@@ -273,26 +273,22 @@ function buildPortfolioLayout(
 ): CanvasNode[] {
   const intro = buildIntroSection(layoutMode, tokens);
   const study = buildSection({
-    body: buildExperienceList(
-      layoutMode,
-      tokens,
-      [EDUCATION_ROW],
-      "education",
+    body: buildExperienceList(layoutMode, tokens, [EDUCATION_ROW], "education"),
+    frame: withSectionTop(
+      tokens.frame,
+      intro.bounds.y + intro.bounds.height + tokens.sectionGap,
     ),
-    frame: withSectionTop(tokens.frame, intro.bounds.y + intro.bounds.height + tokens.sectionGap),
     heading: "I study",
     headingFontSize: tokens.experience.headingFontSize,
     id: `${layoutMode}-study`,
     sectionHeadingGap: tokens.sectionHeadingGap,
   });
   const work = buildSection({
-    body: buildExperienceList(
-      layoutMode,
-      tokens,
-      WORK_EXPERIENCES,
-      "work",
+    body: buildExperienceList(layoutMode, tokens, WORK_EXPERIENCES, "work"),
+    frame: withSectionTop(
+      tokens.frame,
+      study.bounds.y + study.bounds.height + tokens.sectionGap,
     ),
-    frame: withSectionTop(tokens.frame, study.bounds.y + study.bounds.height + tokens.sectionGap),
     heading: "I work(ed) at",
     headingFontSize: tokens.experience.headingFontSize,
     id: `${layoutMode}-work`,
@@ -300,7 +296,10 @@ function buildPortfolioLayout(
   });
   const built = buildSection({
     body: buildProjectList(layoutMode, tokens, PROJECT_ROWS, "project"),
-    frame: withSectionTop(tokens.frame, work.bounds.y + work.bounds.height + tokens.sectionGap),
+    frame: withSectionTop(
+      tokens.frame,
+      work.bounds.y + work.bounds.height + tokens.sectionGap,
+    ),
     heading: "I've built",
     headingFontSize: tokens.project.headingFontSize,
     id: `${layoutMode}-built`,
@@ -347,7 +346,10 @@ function buildIntroSection(
       id: `${layoutMode}-hero-image`,
       alt: "Hero placeholder image",
       src: HERO_PLACEHOLDER_SRC,
-      x: tokens.frame.width - tokens.intro.imageSize + tokens.intro.imageOverflowRight,
+      x:
+        tokens.frame.width -
+        tokens.intro.imageSize +
+        tokens.intro.imageOverflowRight,
       y: tokens.intro.imageOffsetY,
       width: tokens.intro.imageSize,
       height: tokens.intro.imageSize,
@@ -485,7 +487,9 @@ function buildProjectList(
   rows: ProjectRow[],
   sectionId: string,
 ): LayoutBlock {
-  const blocks = rows.map((row) => buildProjectRow(layoutMode, tokens, sectionId, row));
+  const blocks = rows.map((row) =>
+    buildProjectRow(layoutMode, tokens, sectionId, row),
+  );
 
   return vStack(blocks, {
     x: 0,
@@ -527,7 +531,11 @@ function buildProjectRow(
       value: row.summary,
     }),
   ]);
-  const positionedCta = moveBlock(cta, tokens.frame.width - cta.bounds.width, 0);
+  const positionedCta = moveBlock(
+    cta,
+    tokens.frame.width - cta.bounds.width,
+    0,
+  );
 
   return createBlock([...summary.nodes, ...positionedCta.nodes]);
 }
