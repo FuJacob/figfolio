@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
 import { useCanvasStore } from "../store";
+import { CanvasDevTools } from "./CanvasDevTools";
 import { CanvasGrid } from "./CanvasGrid";
 import { CanvasNode } from "./CanvasNode";
 import { FakeCursorOverlay } from "./FakeCursorOverlay";
@@ -41,6 +42,7 @@ export function CanvasEditor() {
         {selectedNode ? <SelectionOverlay node={selectedNode} /> : null}
         <FakeCursorOverlay />
       </div>
+      <CanvasDevTools />
       <SocialDock />
     </main>
   );

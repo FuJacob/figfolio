@@ -21,6 +21,8 @@ type CanvasState = {
   clearSelection: () => void;
   layouts: CanvasLayouts;
   moveNode: (id: CanvasNodeId, position: CanvasPoint) => void;
+  resetActiveLayout: () => void;
+  resetAllLayouts: () => void;
   resizeNode: (id: CanvasNodeId, bounds: Bounds) => void;
   selectedNodeId: CanvasNodeId | null;
   setActiveLayout: (mode: LayoutMode) => void;
@@ -28,14 +30,16 @@ type CanvasState = {
   syncTextNodeSize: (id: CanvasNodeId, size: Pick<Bounds, "height" | "width">) => void;
 };
 
-const INITIAL_LAYOUTS: CanvasLayouts = {
-  desktop: cloneLayout(LAYOUT_PRESETS.desktop),
-  mobile: cloneLayout(LAYOUT_PRESETS.mobile),
-};
+function getInitialLayouts(): CanvasLayouts {
+  return {
+    desktop: cloneLayout(LAYOUT_PRESETS.desktop),
+    mobile: cloneLayout(LAYOUT_PRESETS.mobile),
+  };
+}
 
 export const useCanvasStore = create<CanvasState>((set) => ({
   activeLayout: "desktop",
-  layouts: INITIAL_LAYOUTS,
+  layouts: getInitialLayouts(),
   selectedNodeId: null,
   clearSelection: () =>
     set((state) => {
@@ -86,6 +90,21 @@ export const useCanvasStore = create<CanvasState>((set) => ({
         }),
       };
     }),
+  resetActiveLayout: () =>
+    set((state) => {
+      const nextLayout = cloneLayout(LAYOUT_PRESETS[state.activeLayout]);
+
+      return {
+        layouts: updateActiveLayout(state, nextLayout),
+        selectedNodeId: null,
+      };
+    }),
+  resetAllLayouts: () =>
+    set(() => ({
+      activeLayout: "desktop",
+      layouts: getInitialLayouts(),
+      selectedNodeId: null,
+    })),
   resizeNode: (id, bounds) =>
     set((state) => {
       const layout = getActiveLayout(state);
