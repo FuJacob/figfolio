@@ -5,7 +5,9 @@ import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
 import { useCanvasStore } from "../store";
 import { CanvasGrid } from "./CanvasGrid";
 import { CanvasNode } from "./CanvasNode";
+import { FakeCursorOverlay } from "./FakeCursorOverlay";
 import { SelectionOverlay } from "./SelectionOverlay";
+import { SocialDock } from "./SocialDock";
 
 export function CanvasEditor() {
   const layoutMode = useResponsiveLayoutMode();
@@ -37,7 +39,9 @@ export function CanvasEditor() {
           <CanvasNode key={nodeId} nodeId={nodeId} />
         ))}
         {selectedNode ? <SelectionOverlay node={selectedNode} /> : null}
+        <FakeCursorOverlay />
       </div>
+      <SocialDock />
     </main>
   );
 }
