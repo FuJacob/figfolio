@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   getScaledFontSize,
   getTextNodeSize,
+  getWrappedTextNodeSize,
   snapSize,
   snapToGrid,
 } from "./geometry";
@@ -24,6 +25,7 @@ type CanvasState = {
   selectedNodeId: CanvasNodeId | null;
   setActiveLayout: (mode: LayoutMode) => void;
   selectNode: (id: CanvasNodeId) => void;
+  syncTextNodeSize: (id: CanvasNodeId, size: Pick<Bounds, "height" | "width">) => void;
 };
 
 const INITIAL_LAYOUTS: CanvasLayouts = {
@@ -112,6 +114,15 @@ export const useCanvasStore = create<CanvasState>((set) => ({
                 paddingY: node.paddingY,
                 value: node.value,
               })
+            : node.sizingMode === "wrap"
+              ? getWrappedTextNodeSize({
+                  width: nextWidth,
+                  fontSize: nextFontSize,
+                  fontWeight: node.fontWeight,
+                  paddingX: node.paddingX,
+                  paddingY: node.paddingY,
+                  value: node.value,
+                })
             : {
                 width: nextWidth,
                 height: nextHeight,
@@ -165,6 +176,40 @@ export const useCanvasStore = create<CanvasState>((set) => ({
               y: nextY,
               width: nextWidth,
               height: nextHeight,
+            },
+          },
+        }),
+      };
+    }),
+  syncTextNodeSize: (id, size) =>
+    set((state) => {
+      const layout = getActiveLayout(state);
+      const node = layout.nodes[id];
+
+      if (!node || node.type !== "text" || node.sizingMode === "fixed") {
+        return state;
+      }
+
+      const nextWidth =
+        node.sizingMode === "hug" ? Math.ceil(size.width) : node.width;
+      const nextHeight = Math.ceil(size.height);
+
+      if (node.width === nextWidth && node.height === nextHeight) {
+        return state;
+      }
+
+      return {
+        layouts: updateActiveLayout(state, {
+          ...layout,
+          nodes: {
+            ...layout.nodes,
+            [id]: {
+              ...node,
+              width: nextWidth,
+              height: nextHeight,
+              baseWidth: nextWidth,
+              baseHeight: nextHeight,
+              baseFontSize: node.fontSize,
             },
           },
         }),

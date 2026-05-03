@@ -72,6 +72,38 @@ export function getTextNodeSize(
 }
 
 /**
+ * Estimates the outer node box for a wrapped text node from its authored width.
+ * The DOM later refines the stored height from the actual rendered content.
+ */
+export function getWrappedTextNodeSize(
+  input: Pick<
+    TextCanvasNode,
+    "fontSize" | "fontWeight" | "paddingX" | "paddingY" | "value"
+  > & {
+    width: number;
+  },
+): Size {
+  const contentWidth = Math.max(1, input.width - input.paddingX * 2);
+  const lines = input.value.split("\n");
+  const weightScale = input.fontWeight >= 700 ? 0.64 : 0.6;
+  const visualLineCount = lines.reduce((count, line) => {
+    const estimatedLineWidth = Math.ceil(
+      line.length * input.fontSize * weightScale,
+    );
+
+    return count + Math.max(1, Math.ceil(estimatedLineWidth / contentWidth));
+  }, 0);
+  const textHeight = Math.ceil(
+    visualLineCount * input.fontSize * TEXT_NODE_LINE_HEIGHT,
+  );
+
+  return {
+    width: input.width,
+    height: textHeight + input.paddingY * 2,
+  };
+}
+
+/**
  * Returns snapped bounds for a corner resize while keeping the opposite corner
  * fixed. That matches how design-tool selection boxes usually behave.
  */

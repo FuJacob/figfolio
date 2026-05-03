@@ -1,4 +1,4 @@
-import { getTextNodeSize } from "./geometry";
+import { getTextNodeSize, getWrappedTextNodeSize } from "./geometry";
 import {
   createBlock,
   createBlock as toBlock,
@@ -65,7 +65,6 @@ type ProjectTokens = {
   headingFontSize: number;
   rowGap: number;
   summaryFontSize: number;
-  summaryHeight: number;
 };
 
 type LayoutTokens = {
@@ -137,7 +136,6 @@ const MOBILE_TOKENS: LayoutTokens = {
     headingFontSize: 24,
     rowGap: 22,
     summaryFontSize: 18,
-    summaryHeight: 52,
   },
   sectionGap: 38,
   sectionHeadingGap: 22,
@@ -178,7 +176,6 @@ const DESKTOP_TOKENS: LayoutTokens = {
     headingFontSize: 32,
     rowGap: 28,
     summaryFontSize: 22,
-    summaryHeight: 62,
   },
   sectionGap: 54,
   sectionHeadingGap: 24,
@@ -273,7 +270,13 @@ function buildPortfolioLayout(
 ): CanvasNode[] {
   const intro = buildIntroSection(layoutMode, tokens);
   const study = buildSection({
-    body: buildExperienceList(layoutMode, tokens, [EDUCATION_ROW], "education"),
+    body: buildExperienceList(
+      layoutMode,
+      tokens,
+      [EDUCATION_ROW],
+      "education",
+      false,
+    ),
     frame: withSectionTop(
       tokens.frame,
       intro.bounds.y + intro.bounds.height + tokens.sectionGap,
@@ -284,7 +287,7 @@ function buildPortfolioLayout(
     sectionHeadingGap: tokens.sectionHeadingGap,
   });
   const work = buildSection({
-    body: buildExperienceList(layoutMode, tokens, WORK_EXPERIENCES, "work"),
+    body: buildExperienceList(layoutMode, tokens, WORK_EXPERIENCES, "work", true),
     frame: withSectionTop(
       tokens.frame,
       study.bounds.y + study.bounds.height + tokens.sectionGap,
@@ -370,9 +373,10 @@ function buildExperienceList(
   tokens: LayoutTokens,
   rows: ExperienceRow[],
   sectionId: string,
+  labelAsBadge: boolean,
 ): LayoutBlock {
   const blocks = rows.map((row) =>
-    buildExperienceRow(layoutMode, tokens, sectionId, row),
+    buildExperienceRow(layoutMode, tokens, sectionId, row, labelAsBadge),
   );
 
   return vStack(blocks, {
@@ -387,6 +391,7 @@ function buildExperienceRow(
   tokens: LayoutTokens,
   sectionId: string,
   row: ExperienceRow,
+  labelAsBadge: boolean,
 ): LayoutBlock {
   const experience = tokens.experience;
   const image = toBlock([
@@ -438,16 +443,30 @@ function buildExperienceRow(
       metadataColumn.bounds.width,
   );
   const label = toBlock([
-    createTextNode({
-      id: `${layoutMode}-${sectionId}-${row.id}-label`,
-      x: 0,
-      y: 0,
-      width: availableLabelWidth,
-      height: experience.labelHeight,
-      fontSize: experience.labelFontSize,
-      fontWeight: 600,
-      value: row.label,
-    }),
+    labelAsBadge
+      ? createTextNode({
+          id: `${layoutMode}-${sectionId}-${row.id}-label`,
+          x: 0,
+          y: 0,
+          backgroundColor: "#ffffff",
+          borderRadius: 16,
+          fontSize: experience.labelFontSize,
+          fontWeight: 600,
+          paddingX: 12,
+          paddingY: 7,
+          sizingMode: "hug",
+          value: row.label,
+        })
+      : createTextNode({
+          id: `${layoutMode}-${sectionId}-${row.id}-label`,
+          x: 0,
+          y: 0,
+          width: availableLabelWidth,
+          fontSize: experience.labelFontSize,
+          fontWeight: 600,
+          sizingMode: "wrap",
+          value: row.label,
+        }),
   ]);
   const role = toBlock([
     createTextNode({
@@ -525,9 +544,9 @@ function buildProjectRow(
       x: 0,
       y: 0,
       width: summaryWidth,
-      height: tokens.project.summaryHeight,
       fontSize: tokens.project.summaryFontSize,
       fontWeight: 500,
+      sizingMode: "wrap",
       value: row.summary,
     }),
   ]);
@@ -610,6 +629,15 @@ function createTextNode(input: CreateTextNodeInput): TextCanvasNode {
           paddingY,
           value: input.value,
         })
+      : sizingMode === "wrap"
+        ? getWrappedTextNodeSize({
+            width: getRequiredWrapWidth(input),
+            fontSize: input.fontSize,
+            fontWeight,
+            paddingX,
+            paddingY,
+            value: input.value,
+          })
       : null;
   const width = derivedSize?.width ?? input.width;
   const height = derivedSize?.height ?? input.height;
@@ -669,6 +697,16 @@ export function cloneLayout(layout: CanvasLayout): CanvasLayout {
 
 function cloneNode(node: CanvasNode): CanvasNode {
   return { ...node };
+}
+
+function getRequiredWrapWidth(
+  input: Pick<CreateTextNodeInput, "id" | "width">,
+): number {
+  if (typeof input.width !== "number") {
+    throw new Error(`Wrap text node "${input.id}" requires a width.`);
+  }
+
+  return input.width;
 }
 
 function withSectionTop(

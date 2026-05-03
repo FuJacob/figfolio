@@ -2,7 +2,7 @@ export type CanvasNodeId = string;
 export type NodeType = "text" | "image";
 export type LayoutMode = "mobile" | "desktop";
 export type ImageFitMode = "contain" | "cover";
-export type TextSizingMode = "fixed" | "hug";
+export type TextSizingMode = "fixed" | "hug" | "wrap";
 
 export type CanvasPoint = {
   x: number;
