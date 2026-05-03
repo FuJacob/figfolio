@@ -31,7 +31,7 @@ function CanvasTextNodeView({ isSelected, node }: CanvasTextNodeViewProps) {
   return (
     <div
       className={cx(
-        "absolute cursor-grab select-none overflow-visible rounded-sm border bg-white/50 text-slate-950 active:cursor-grabbing",
+        "absolute cursor-grab select-none overflow-visible rounded-sm border text-slate-950 active:cursor-grabbing",
         isSelected ? "border-blue-500" : "border-transparent",
       )}
       onPointerCancel={interaction.handleNodePointerUp}
@@ -48,7 +48,7 @@ function CanvasTextNodeView({ isSelected, node }: CanvasTextNodeViewProps) {
       title={`${node.value} (${node.x}, ${node.y})`}
     >
       <div
-        className="h-full w-full overflow-hidden whitespace-pre-wrap px-2 py-1"
+        className="h-full w-full overflow-hidden whitespace-pre-wrap "
         style={{
           fontSize: node.fontSize,
           lineHeight: TEXT_NODE_LINE_HEIGHT,

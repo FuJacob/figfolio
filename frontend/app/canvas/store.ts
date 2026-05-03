@@ -106,7 +106,7 @@ export const useCanvasStore = create<CanvasState>((set) => ({
       const nextY = snapToGrid(bounds.y);
       const nextFontSize = getScaledFontSize(node, {
         width: nextWidth,
-        height: nextHeight,
+        height: nextHeight, 
       });
 
       if (
