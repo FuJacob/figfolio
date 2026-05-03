@@ -20,8 +20,13 @@ export function CanvasTextNodeView({
       <div
         className="h-full w-full overflow-hidden whitespace-pre-wrap"
         style={{
+          backgroundColor: node.backgroundColor,
+          borderRadius: node.borderRadius,
+          color: node.textColor,
           fontSize: node.fontSize,
+          fontWeight: node.fontWeight,
           lineHeight: TEXT_NODE_LINE_HEIGHT,
+          padding: `${node.paddingY}px ${node.paddingX}px`,
         }}
       >
         {node.value}

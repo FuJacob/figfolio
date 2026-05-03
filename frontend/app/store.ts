@@ -12,6 +12,7 @@ export {
 export {
   getResizedBounds,
   getScaledFontSize,
+  getTextNodeSize,
   snapSize,
   snapToGrid,
 } from "./canvas/geometry";
@@ -34,5 +35,6 @@ export type {
   ResizeInteraction,
   Size,
   TextCanvasNode,
+  TextSizingMode,
   ViewportPoint,
 } from "./canvas/types";

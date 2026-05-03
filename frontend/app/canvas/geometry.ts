@@ -3,6 +3,7 @@ import {
   MAX_FONT_SIZE,
   MIN_FONT_SIZE,
   MIN_NODE_SIZE,
+  TEXT_NODE_LINE_HEIGHT,
 } from "./constants";
 import type {
   Bounds,
@@ -44,6 +45,33 @@ export function getScaledFontSize(node: TextCanvasNode, size: Size): number {
 }
 
 /**
+ * Derives the outer node box for a hug-sized text node from its typography and
+ * surface spacing properties.
+ */
+export function getTextNodeSize(
+  input: Pick<
+    TextCanvasNode,
+    "fontSize" | "fontWeight" | "paddingX" | "paddingY" | "value"
+  >,
+): Size {
+  const lines = input.value.split("\n");
+  const maxLineLength = lines.reduce(
+    (maxLength, line) => Math.max(maxLength, line.length),
+    0,
+  );
+  const weightScale = input.fontWeight >= 700 ? 0.64 : 0.6;
+  const textWidth = Math.ceil(maxLineLength * input.fontSize * weightScale);
+  const textHeight = Math.ceil(
+    lines.length * input.fontSize * TEXT_NODE_LINE_HEIGHT,
+  );
+
+  return {
+    width: textWidth + input.paddingX * 2,
+    height: textHeight + input.paddingY * 2,
+  };
+}
+
+/**
  * Returns snapped bounds for a corner resize while keeping the opposite corner
  * fixed. That matches how design-tool selection boxes usually behave.
  */
@@ -58,67 +86,43 @@ export function getResizedBounds({
   const { x, y, width, height } = startNode;
   const right = x + width;
   const bottom = y + height;
+  const nextLeft = doesHandleMoveLeftEdge(handle)
+    ? Math.min(snapToGrid(x + deltaX), right - MIN_NODE_SIZE)
+    : x;
+  const nextRight = doesHandleMoveRightEdge(handle)
+    ? Math.max(snapToGrid(right + deltaX), x + MIN_NODE_SIZE)
+    : right;
+  const nextTop = doesHandleMoveTopEdge(handle)
+    ? Math.min(snapToGrid(y + deltaY), bottom - MIN_NODE_SIZE)
+    : y;
+  const nextBottom = doesHandleMoveBottomEdge(handle)
+    ? Math.max(snapToGrid(bottom + deltaY), y + MIN_NODE_SIZE)
+    : bottom;
 
-  switch (handle) {
-    case "top-left": {
-      const nextX = Math.min(snapToGrid(x + deltaX), right - MIN_NODE_SIZE);
-      const nextY = Math.min(snapToGrid(y + deltaY), bottom - MIN_NODE_SIZE);
-
-      return {
-        x: nextX,
-        y: nextY,
-        width: right - nextX,
-        height: bottom - nextY,
-      };
-    }
-    case "top-right": {
-      const nextRight = Math.max(
-        snapToGrid(right + deltaX),
-        x + MIN_NODE_SIZE,
-      );
-      const nextY = Math.min(snapToGrid(y + deltaY), bottom - MIN_NODE_SIZE);
-
-      return {
-        x,
-        y: nextY,
-        width: nextRight - x,
-        height: bottom - nextY,
-      };
-    }
-    case "bottom-left": {
-      const nextX = Math.min(snapToGrid(x + deltaX), right - MIN_NODE_SIZE);
-      const nextBottom = Math.max(
-        snapToGrid(bottom + deltaY),
-        y + MIN_NODE_SIZE,
-      );
-
-      return {
-        x: nextX,
-        y,
-        width: right - nextX,
-        height: nextBottom - y,
-      };
-    }
-    case "bottom-right": {
-      const nextRight = Math.max(
-        snapToGrid(right + deltaX),
-        x + MIN_NODE_SIZE,
-      );
-      const nextBottom = Math.max(
-        snapToGrid(bottom + deltaY),
-        y + MIN_NODE_SIZE,
-      );
-
-      return {
-        x,
-        y,
-        width: nextRight - x,
-        height: nextBottom - y,
-      };
-    }
-  }
+  return {
+    x: nextLeft,
+    y: nextTop,
+    width: nextRight - nextLeft,
+    height: nextBottom - nextTop,
+  };
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+function doesHandleMoveLeftEdge(handle: ResizeHandle): boolean {
+  return handle === "top-left" || handle === "bottom-left";
+}
+
+function doesHandleMoveRightEdge(handle: ResizeHandle): boolean {
+  return handle === "top-right" || handle === "bottom-right";
+}
+
+function doesHandleMoveTopEdge(handle: ResizeHandle): boolean {
+  return handle === "top-left" || handle === "top-right";
+}
+
+function doesHandleMoveBottomEdge(handle: ResizeHandle): boolean {
+  return handle === "bottom-left" || handle === "bottom-right";
 }

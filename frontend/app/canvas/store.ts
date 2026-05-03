@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { getScaledFontSize, snapSize, snapToGrid } from "./geometry";
+import {
+  getScaledFontSize,
+  getTextNodeSize,
+  snapSize,
+  snapToGrid,
+} from "./geometry";
 import { cloneLayout, LAYOUT_PRESETS } from "./layoutPresets";
 import type {
   Bounds,
@@ -98,12 +103,25 @@ export const useCanvasStore = create<CanvasState>((set) => ({
           width: nextWidth,
           height: nextHeight,
         });
+        const nextSize =
+          node.sizingMode === "hug"
+            ? getTextNodeSize({
+                fontSize: nextFontSize,
+                fontWeight: node.fontWeight,
+                paddingX: node.paddingX,
+                paddingY: node.paddingY,
+                value: node.value,
+              })
+            : {
+                width: nextWidth,
+                height: nextHeight,
+              };
 
         if (
           node.x === nextX &&
           node.y === nextY &&
-          node.width === nextWidth &&
-          node.height === nextHeight &&
+          node.width === nextSize.width &&
+          node.height === nextSize.height &&
           node.fontSize === nextFontSize
         ) {
           return state;
@@ -118,8 +136,8 @@ export const useCanvasStore = create<CanvasState>((set) => ({
                 ...node,
                 x: nextX,
                 y: nextY,
-                width: nextWidth,
-                height: nextHeight,
+                width: nextSize.width,
+                height: nextSize.height,
                 fontSize: nextFontSize,
               },
             },

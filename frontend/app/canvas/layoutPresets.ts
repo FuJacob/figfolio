@@ -1,9 +1,11 @@
+import { getTextNodeSize } from "./geometry";
 import type {
   CanvasLayout,
   CanvasNode,
   CanvasNodeId,
   ImageCanvasNode,
   TextCanvasNode,
+  TextSizingMode,
 } from "./types";
 
 type WorkExperience = {
@@ -14,7 +16,26 @@ type WorkExperience = {
   year: string;
 };
 
+type CreateTextNodeInput = {
+  backgroundColor?: string;
+  borderRadius?: number;
+  fontSize: number;
+  fontWeight?: number;
+  height?: number;
+  id: string;
+  paddingX?: number;
+  paddingY?: number;
+  sizingMode?: TextSizingMode;
+  textColor?: string;
+  value: string;
+  width?: number;
+  x: number;
+  y: number;
+};
+
 const HERO_PLACEHOLDER_SRC = "/companies/kaimz.png";
+const SURFACE_COLOR = "#ffffff";
+const TEXT_COLOR = "#0f172a";
 
 const WORK_EXPERIENCES: WorkExperience[] = [
   {
@@ -59,9 +80,9 @@ const DESKTOP_NODES: CanvasNode[] = [
     id: "greeting",
     x: 100,
     y: 60,
-    width: 180,
-    height: 40,
     fontSize: 30,
+    fontWeight: 500,
+    sizingMode: "hug",
     value: "hey there!",
   }),
   createTextNode({
@@ -71,6 +92,7 @@ const DESKTOP_NODES: CanvasNode[] = [
     width: 420,
     height: 170,
     fontSize: 76,
+    fontWeight: 600,
     value: "i'm\nJacob Fu",
   }),
   createImageNode({
@@ -87,9 +109,9 @@ const DESKTOP_NODES: CanvasNode[] = [
     id: "study-heading",
     x: 100,
     y: 360,
-    width: 160,
-    height: 40,
     fontSize: 30,
+    fontWeight: 500,
+    sizingMode: "hug",
     value: "I study",
   }),
   createImageNode({
@@ -106,27 +128,31 @@ const DESKTOP_NODES: CanvasNode[] = [
     id: "study-waterloo-name",
     x: 240,
     y: 428,
-    width: 360,
-    height: 40,
     fontSize: 28,
+    fontWeight: 600,
+    sizingMode: "hug",
     value: "University of Waterloo",
   }),
   createTextNode({
     id: "study-waterloo-program",
     x: 240,
-    y: 472,
-    width: 280,
-    height: 34,
-    fontSize: 24,
+    y: 474,
+    fontSize: 22,
+    fontWeight: 600,
+    sizingMode: "hug",
+    backgroundColor: SURFACE_COLOR,
+    borderRadius: 16,
+    paddingX: 14,
+    paddingY: 8,
     value: "Computer Science",
   }),
   createTextNode({
     id: "work-heading",
     x: 100,
     y: 580,
-    width: 240,
-    height: 40,
     fontSize: 30,
+    fontWeight: 500,
+    sizingMode: "hug",
     value: "I work(ed) at",
   }),
   ...createDesktopWorkNodes(),
@@ -137,6 +163,7 @@ const DESKTOP_NODES: CanvasNode[] = [
     width: 260,
     height: 70,
     fontSize: 30,
+    fontWeight: 500,
     value: "one day /\ni've built",
   }),
   createImageNode({
@@ -176,9 +203,9 @@ const MOBILE_NODES: CanvasNode[] = [
     id: "greeting",
     x: 20,
     y: 24,
-    width: 140,
-    height: 32,
     fontSize: 24,
+    fontWeight: 500,
+    sizingMode: "hug",
     value: "hey there!",
   }),
   createTextNode({
@@ -188,6 +215,7 @@ const MOBILE_NODES: CanvasNode[] = [
     width: 180,
     height: 120,
     fontSize: 52,
+    fontWeight: 600,
     value: "i'm\nJacob Fu",
   }),
   createImageNode({
@@ -204,9 +232,9 @@ const MOBILE_NODES: CanvasNode[] = [
     id: "study-heading",
     x: 20,
     y: 198,
-    width: 120,
-    height: 28,
     fontSize: 24,
+    fontWeight: 500,
+    sizingMode: "hug",
     value: "I study",
   }),
   createImageNode({
@@ -223,27 +251,31 @@ const MOBILE_NODES: CanvasNode[] = [
     id: "study-waterloo-name",
     x: 116,
     y: 242,
-    width: 190,
-    height: 48,
     fontSize: 18,
+    fontWeight: 600,
+    sizingMode: "hug",
     value: "University of\nWaterloo",
   }),
   createTextNode({
     id: "study-waterloo-program",
     x: 116,
-    y: 294,
-    width: 180,
-    height: 24,
-    fontSize: 18,
+    y: 296,
+    fontSize: 16,
+    fontWeight: 600,
+    sizingMode: "hug",
+    backgroundColor: SURFACE_COLOR,
+    borderRadius: 14,
+    paddingX: 12,
+    paddingY: 6,
     value: "Computer Science",
   }),
   createTextNode({
     id: "work-heading",
     x: 20,
     y: 348,
-    width: 180,
-    height: 28,
     fontSize: 24,
+    fontWeight: 500,
+    sizingMode: "hug",
     value: "I work(ed) at",
   }),
   ...createMobileWorkNodes(),
@@ -254,6 +286,7 @@ const MOBILE_NODES: CanvasNode[] = [
     width: 220,
     height: 56,
     fontSize: 24,
+    fontWeight: 500,
     value: "one day /\ni've built",
   }),
   createImageNode({
@@ -291,54 +324,54 @@ const MOBILE_NODES: CanvasNode[] = [
 function createDesktopWorkNodes(): CanvasNode[] {
   return [
     ...createWorkRowNodes({
-      companyX: 200,
+      companyX: 188,
       imageX: 100,
-      labelFontSize: 24,
-      labelWidth: 160,
+      labelFontSize: 22,
       rowY: 640,
       size: 64,
       work: WORK_EXPERIENCES[0],
-      yearX: 380,
+      yearX: 346,
+      yearWidthHint: 72,
     }),
     ...createWorkRowNodes({
-      companyX: 520,
+      companyX: 500,
       imageX: 420,
-      labelFontSize: 24,
-      labelWidth: 160,
+      labelFontSize: 22,
       rowY: 640,
       size: 64,
       work: WORK_EXPERIENCES[1],
-      yearX: 700,
+      yearX: 632,
+      yearWidthHint: 72,
     }),
     ...createWorkRowNodes({
-      companyX: 200,
+      companyX: 188,
       imageX: 100,
-      labelFontSize: 24,
-      labelWidth: 180,
+      labelFontSize: 22,
       rowY: 730,
       size: 64,
       work: WORK_EXPERIENCES[2],
-      yearX: 380,
+      yearX: 382,
+      yearWidthHint: 72,
     }),
     ...createWorkRowNodes({
-      companyX: 520,
+      companyX: 500,
       imageX: 420,
-      labelFontSize: 24,
-      labelWidth: 180,
+      labelFontSize: 22,
       rowY: 730,
       size: 64,
       work: WORK_EXPERIENCES[3],
-      yearX: 700,
+      yearX: 676,
+      yearWidthHint: 72,
     }),
     ...createWorkRowNodes({
-      companyX: 200,
+      companyX: 188,
       imageX: 100,
-      labelFontSize: 24,
-      labelWidth: 160,
+      labelFontSize: 22,
       rowY: 820,
       size: 64,
       work: WORK_EXPERIENCES[4],
-      yearX: 380,
+      yearX: 348,
+      yearWidthHint: 72,
     }),
   ];
 }
@@ -346,14 +379,14 @@ function createDesktopWorkNodes(): CanvasNode[] {
 function createMobileWorkNodes(): CanvasNode[] {
   return WORK_EXPERIENCES.flatMap((work, index) =>
     createWorkRowNodes({
-      companyX: 92,
+      companyX: 82,
       imageX: 20,
-      labelFontSize: 18,
-      labelWidth: 120,
+      labelFontSize: 16,
       rowY: 396 + index * 58,
       size: 44,
       work,
-      yearX: 236,
+      yearX: 232,
+      yearWidthHint: 68,
     }),
   );
 }
@@ -362,20 +395,20 @@ function createWorkRowNodes({
   companyX,
   imageX,
   labelFontSize,
-  labelWidth,
   rowY,
   size,
   work,
   yearX,
+  yearWidthHint,
 }: {
   companyX: number;
   imageX: number;
   labelFontSize: number;
-  labelWidth: number;
   rowY: number;
   size: number;
   work: WorkExperience;
   yearX: number;
+  yearWidthHint: number;
 }): CanvasNode[] {
   return [
     createImageNode({
@@ -391,19 +424,28 @@ function createWorkRowNodes({
     createTextNode({
       id: `work-${work.id}-label`,
       x: companyX,
-      y: rowY + 6,
-      width: labelWidth,
-      height: 28,
+      y: rowY + 8,
       fontSize: labelFontSize,
+      fontWeight: 600,
+      sizingMode: "hug",
+      backgroundColor: SURFACE_COLOR,
+      borderRadius: 16,
+      paddingX: 14,
+      paddingY: 8,
       value: work.label,
     }),
     createTextNode({
       id: `work-${work.id}-year`,
       x: yearX,
       y: rowY + 8,
-      width: 80,
-      height: 24,
-      fontSize: Math.max(labelFontSize - 4, 14),
+      width: yearWidthHint,
+      fontSize: Math.max(labelFontSize - 2, 14),
+      fontWeight: 600,
+      sizingMode: "hug",
+      backgroundColor: SURFACE_COLOR,
+      borderRadius: 16,
+      paddingX: 12,
+      paddingY: 8,
       value: work.year,
     }),
   ];
@@ -422,18 +464,50 @@ function createLayout(nodes: CanvasNode[]): CanvasLayout {
   };
 }
 
-function createTextNode(
-  input: Omit<
-    TextCanvasNode,
-    "baseFontSize" | "baseHeight" | "baseWidth" | "type"
-  >,
-): TextCanvasNode {
+function createTextNode(input: CreateTextNodeInput): TextCanvasNode {
+  const sizingMode = input.sizingMode ?? "fixed";
+  const paddingX = input.paddingX ?? 0;
+  const paddingY = input.paddingY ?? 0;
+  const fontWeight = input.fontWeight ?? 500;
+  const textColor = input.textColor ?? TEXT_COLOR;
+  const backgroundColor = input.backgroundColor ?? "transparent";
+  const borderRadius = input.borderRadius ?? 0;
+  const derivedSize =
+    sizingMode === "hug"
+      ? getTextNodeSize({
+          fontSize: input.fontSize,
+          fontWeight,
+          paddingX,
+          paddingY,
+          value: input.value,
+        })
+      : null;
+  const width = derivedSize?.width ?? input.width;
+  const height = derivedSize?.height ?? input.height;
+
+  if (typeof width !== "number" || typeof height !== "number") {
+    throw new Error(`Fixed text node "${input.id}" requires width and height.`);
+  }
+
   return {
-    ...input,
+    id: input.id,
     type: "text",
-    baseWidth: input.width,
-    baseHeight: input.height,
+    x: input.x,
+    y: input.y,
+    width,
+    height,
+    baseWidth: width,
+    baseHeight: height,
+    fontSize: input.fontSize,
     baseFontSize: input.fontSize,
+    value: input.value,
+    sizingMode,
+    textColor,
+    backgroundColor,
+    fontWeight,
+    paddingX,
+    paddingY,
+    borderRadius,
   };
 }
 

@@ -2,6 +2,7 @@ export type CanvasNodeId = string;
 export type NodeType = "text" | "image";
 export type LayoutMode = "mobile" | "desktop";
 export type ImageFitMode = "contain" | "cover";
+export type TextSizingMode = "fixed" | "hug";
 
 export type CanvasPoint = {
   x: number;
@@ -29,8 +30,15 @@ export type BaseCanvasNode = Bounds & {
 
 export type TextCanvasNode = BaseCanvasNode & {
   type: "text";
+  backgroundColor: string;
+  borderRadius: number;
   fontSize: number;
   baseFontSize: number;
+  fontWeight: number;
+  paddingX: number;
+  paddingY: number;
+  sizingMode: TextSizingMode;
+  textColor: string;
   value: string;
 };
 
