@@ -5,6 +5,7 @@ import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
 import { useCanvasStore } from "../store";
 import { CanvasGrid } from "./CanvasGrid";
 import { CanvasNode } from "./CanvasNode";
+import { SelectionOverlay } from "./SelectionOverlay";
 
 export function CanvasEditor() {
   const layoutMode = useResponsiveLayoutMode();
@@ -12,6 +13,11 @@ export function CanvasEditor() {
     (state) => state.layouts[state.activeLayout].nodeIds,
   );
   const clearSelection = useCanvasStore((state) => state.clearSelection);
+  const selectedNode = useCanvasStore((state) =>
+    state.selectedNodeId
+      ? state.layouts[state.activeLayout].nodes[state.selectedNodeId] ?? null
+      : null,
+  );
   const setActiveLayout = useCanvasStore((state) => state.setActiveLayout);
 
   useEffect(() => {
@@ -30,6 +36,7 @@ export function CanvasEditor() {
         {nodeIds.map((nodeId) => (
           <CanvasNode key={nodeId} nodeId={nodeId} />
         ))}
+        {selectedNode ? <SelectionOverlay node={selectedNode} /> : null}
       </div>
     </main>
   );

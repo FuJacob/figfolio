@@ -13,10 +13,10 @@ type ResizeHandleButtonProps = {
 };
 
 const HANDLE_CLASS_BY_HANDLE: Record<ResizeHandle, string> = {
-  "top-left": "-left-1.5 -top-1.5 cursor-nwse-resize",
-  "top-right": "-right-1.5 -top-1.5 cursor-nesw-resize",
-  "bottom-left": "-bottom-1.5 -left-1.5 cursor-nesw-resize",
-  "bottom-right": "-bottom-1.5 -right-1.5 cursor-nwse-resize",
+  "top-left": "-left-2.5 -top-2.5 cursor-nwse-resize",
+  "top-right": "-right-2.5 -top-2.5 cursor-nesw-resize",
+  "bottom-left": "-bottom-2.5 -left-2.5 cursor-nesw-resize",
+  "bottom-right": "-bottom-2.5 -right-2.5 cursor-nwse-resize",
 };
 
 export function ResizeHandleButton({
@@ -29,7 +29,7 @@ export function ResizeHandleButton({
     <button
       aria-label={`Resize from ${handle.replace("-", " ")}`}
       className={cx(
-        "absolute z-10 size-2.5 border border-blue-500 bg-white",
+        "pointer-events-auto absolute z-10 size-5 rounded-md border-4 border-sky-500 bg-white shadow-sm",
         HANDLE_CLASS_BY_HANDLE[handle],
       )}
       onPointerCancel={onPointerUp}

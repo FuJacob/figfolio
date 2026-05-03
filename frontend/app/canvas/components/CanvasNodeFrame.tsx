@@ -1,9 +1,6 @@
 import type { PropsWithChildren } from "react";
-import { RESIZE_HANDLES } from "../constants";
 import { useNodeInteraction } from "../hooks/useNodeInteraction";
 import type { CanvasNode } from "../types";
-import { cx } from "../utils/classNames";
-import { ResizeHandleButton } from "./ResizeHandle";
 
 type CanvasNodeFrameProps = PropsWithChildren<{
   isSelected: boolean;
@@ -25,10 +22,7 @@ export function CanvasNodeFrame({
 
   return (
     <div
-      className={cx(
-        "absolute cursor-grab select-none overflow-visible rounded-sm border text-slate-950 active:cursor-grabbing",
-        isSelected ? "border-blue-500" : "border-transparent",
-      )}
+      className="absolute cursor-grab select-none overflow-visible text-slate-950 active:cursor-grabbing"
       onPointerCancel={interaction.handleNodePointerUp}
       onPointerDown={interaction.handleNodePointerDown}
       onPointerMove={interaction.handleNodePointerMove}
@@ -43,17 +37,6 @@ export function CanvasNodeFrame({
       title={title}
     >
       {children}
-      {isSelected
-        ? RESIZE_HANDLES.map((handle) => (
-            <ResizeHandleButton
-              key={handle}
-              handle={handle}
-              onPointerDown={interaction.handleResizePointerDown}
-              onPointerMove={interaction.handleResizePointerMove}
-              onPointerUp={interaction.handleResizePointerUp}
-            />
-          ))
-        : null}
     </div>
   );
 }
