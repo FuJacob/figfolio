@@ -1,10 +1,30 @@
-import { create } from "zustand";
-
-export const GRID_SIZE = 20;
-
-
-export const useStore = create((set) => ({
-    nodes: {
-        
-    }
-}))
+export {
+  GRID_DOT_COLOR,
+  GRID_DOT_SIZE,
+  GRID_SIZE,
+  MAX_FONT_SIZE,
+  MIN_FONT_SIZE,
+  MIN_NODE_SIZE,
+  RESIZE_HANDLES,
+  TEXT_NODE_LINE_HEIGHT,
+} from "./canvas/constants";
+export {
+  getResizedBounds,
+  getScaledFontSize,
+  snapSize,
+  snapToGrid,
+} from "./canvas/geometry";
+export { useCanvasStore as useStore } from "./canvas/store";
+export type {
+  Bounds,
+  CanvasNode,
+  CanvasNodeId,
+  CanvasPoint,
+  DragInteraction,
+  NodeInteraction,
+  NodeType,
+  ResizeHandle,
+  ResizeInteraction,
+  Size,
+  ViewportPoint,
+} from "./canvas/types";
