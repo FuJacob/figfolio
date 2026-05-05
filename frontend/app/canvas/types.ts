@@ -3,6 +3,7 @@ export type NodeType = "text" | "image";
 export type LayoutMode = "mobile" | "desktop";
 export type ImageFitMode = "contain" | "cover";
 export type TextSizingMode = "fixed" | "hug" | "wrap";
+export type TextAlignMode = "left" | "right";
 
 export type CanvasPoint = {
   x: number;
@@ -40,6 +41,7 @@ export type TextCanvasNode = BaseCanvasNode & {
   paddingX: number;
   paddingY: number;
   sizingMode: TextSizingMode;
+  textAlign: TextAlignMode;
   textColor: string;
   value: string;
 };

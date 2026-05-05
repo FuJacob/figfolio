@@ -1,1433 +1,778 @@
-import type { CanvasLayout, CanvasNode, CanvasNodeId } from "./types";
+import { getTextNodeSize, getWrappedTextNodeSize } from "./geometry";
+import type {
+  CanvasLayout,
+  CanvasNode,
+  CanvasNodeId,
+  ImageFitMode,
+  TextAlignMode,
+  TextCanvasNode,
+  TextSizingMode,
+} from "./types";
 
-const DESKTOP_LAYOUT: CanvasLayout = {
-  frame: {
-    width: 1440,
-    height: 1600,
+type TextStyleToken = Pick<
+  TextCanvasNode,
+  | "backgroundColor"
+  | "borderRadius"
+  | "fontSize"
+  | "fontWeight"
+  | "paddingX"
+  | "paddingY"
+  | "textColor"
+>;
+
+type WorkItem = {
+  alt: string;
+  company: string;
+  id: string;
+  location: string;
+  role: string;
+  src: string;
+  year: string;
+};
+
+type ProjectItem = {
+  id: string;
+  summary: string;
+};
+
+type IntroLayoutConfig = {
+  greetingX: number;
+  greetingY: number;
+  heroHeight: number;
+  heroWidth: number;
+  heroX: number;
+  heroY: number;
+  nameHeight: number;
+  nameWidth: number;
+  nameX: number;
+  nameY: number;
+};
+
+type EducationLayoutConfig = {
+  imageSize: number;
+  imageX: number;
+  labelWidth: number;
+  leftX: number;
+  rightColumnWidth: number;
+  rightEdge: number;
+  roleOffsetY: number;
+  rowY: number;
+};
+
+type WorkLayoutConfig = {
+  imageSize: number;
+  labelX: number;
+  leftX: number;
+  locationOffsetY: number;
+  rightColumnWidth: number;
+  rightEdge: number;
+  roleOffsetY: number;
+  rowGap: number;
+  startY: number;
+};
+
+type ProjectsLayoutConfig = {
+  rowGap: number;
+  startY: number;
+  summaryWidth: number;
+  x: number;
+};
+
+type DesktopProjectsLayoutConfig = ProjectsLayoutConfig & {
+  ctaRightEdge: number;
+  showCta: true;
+};
+
+type MobileProjectsLayoutConfig = ProjectsLayoutConfig & {
+  showCta: false;
+};
+
+const TRANSPARENT = "transparent";
+const TEXT_COLOR = "#0f172a";
+
+const DEFAULT_TEXT_STYLE: TextStyleToken = {
+  backgroundColor: TRANSPARENT,
+  borderRadius: 0,
+  fontSize: 16,
+  fontWeight: 500,
+  paddingX: 0,
+  paddingY: 0,
+  textColor: TEXT_COLOR,
+};
+
+const TEXT_STYLES = {
+  desktopBody: createTextStyle({
+    fontSize: 19,
+    fontWeight: 500,
+  }),
+  desktopEyebrow: createTextStyle({
+    fontSize: 34,
+    fontWeight: 500,
+  }),
+  desktopHeroName: createTextStyle({
+    fontSize: 92,
+    fontWeight: 600,
+  }),
+  desktopProject: createTextStyle({
+    fontSize: 22,
+    fontWeight: 500,
+  }),
+  desktopProjectCta: createTextStyle({
+    fontSize: 20,
+    fontWeight: 500,
+  }),
+  desktopSection: createTextStyle({
+    fontSize: 32,
+    fontWeight: 500,
+  }),
+  desktopTitle: createTextStyle({
+    fontSize: 22,
+    fontWeight: 600,
+  }),
+  mobileBody: createTextStyle({
+    fontSize: 15,
+    fontWeight: 500,
+  }),
+  mobileEyebrow: createTextStyle({
+    fontSize: 24,
+    fontWeight: 500,
+  }),
+  mobileHeroName: createTextStyle({
+    fontSize: 59,
+    fontWeight: 600,
+  }),
+  mobileProject: createTextStyle({
+    fontSize: 15,
+    fontWeight: 500,
+  }),
+  mobileSection: createTextStyle({
+    fontSize: 19,
+    fontWeight: 500,
+  }),
+  mobileTitle: createTextStyle({
+    fontSize: 17,
+    fontWeight: 600,
+  }),
+} as const;
+
+const WORK_ITEMS: readonly WorkItem[] = [
+  {
+    alt: "Ramp logo",
+    company: "Ramp",
+    id: "ramp",
+    location: "New York City, NY",
+    role: "Engineering",
+    src: "/companies/ramp.jpeg",
+    year: "2025",
   },
-  nodeIds: [
-    "desktop-greeting",
-    "desktop-name",
-    "desktop-hero-image",
-    "desktop-study-heading",
-    "desktop-education-waterloo-image",
-    "desktop-education-waterloo-label",
-    "desktop-education-waterloo-role",
-    "desktop-education-waterloo-year",
-    "desktop-education-waterloo-location",
-    "desktop-work-heading",
-    "desktop-work-ramp-image",
-    "desktop-work-ramp-label",
-    "desktop-work-ramp-role",
-    "desktop-work-ramp-year",
-    "desktop-work-ramp-location",
-    "desktop-work-uber-image",
-    "desktop-work-uber-label",
-    "desktop-work-uber-role",
-    "desktop-work-uber-year",
-    "desktop-work-uber-location",
-    "desktop-work-hubspot-image",
-    "desktop-work-hubspot-label",
-    "desktop-work-hubspot-role",
-    "desktop-work-hubspot-year",
-    "desktop-work-hubspot-location",
-    "desktop-work-bridgewell-image",
-    "desktop-work-bridgewell-label",
-    "desktop-work-bridgewell-role",
-    "desktop-work-bridgewell-year",
-    "desktop-work-bridgewell-location",
-    "desktop-built-heading",
-    "desktop-project-phishing-sim-summary",
-    "desktop-project-phishing-sim-cta",
-    "desktop-project-sales-copilot-summary",
-    "desktop-project-sales-copilot-cta",
-    "desktop-project-ops-portal-summary",
-    "desktop-project-ops-portal-cta",
-  ],
-  nodes: {
-    "desktop-greeting": {
-      id: "desktop-greeting",
-      type: "text",
-      x: 360,
-      y: 86,
-      width: 27,
-      height: 35,
-      baseWidth: 27,
-      baseHeight: 35,
-      fontSize: 34,
-      baseFontSize: 34,
-      value: "Hey there, I'm",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-name": {
-      id: "desktop-name",
-      type: "text",
-      x: 360,
-      y: 147,
-      width: 360,
-      height: 120,
-      baseWidth: 360,
-      baseHeight: 120,
-      fontSize: 92,
-      baseFontSize: 92,
-      value: "Jacob Fu",
-      sizingMode: "fixed",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-hero-image": {
-      id: "desktop-hero-image",
-      alt: "Hero placeholder image",
-      src: "/companies/kaimz.png",
-      x: 896,
-      y: 52,
-      width: 300,
-      height: 300,
-      fit: "cover",
-      type: "image",
-      baseWidth: 300,
-      baseHeight: 300,
-    },
-    "desktop-study-heading": {
-      id: "desktop-study-heading",
-      type: "text",
+  {
+    alt: "Uber logo",
+    company: "Uber",
+    id: "uber",
+    location: "Sunnyvale, CA",
+    role: "Engineering",
+    src: "/companies/uber.png",
+    year: "YYYY",
+  },
+  {
+    alt: "HubSpot logo",
+    company: "HubSpot",
+    id: "hubspot",
+    location: "Boston, MA",
+    role: "Engineering",
+    src: "/companies/hubspot.png",
+    year: "YYYY",
+  },
+  {
+    alt: "HubSpot logo",
+    company: "HubSpot",
+    id: "hubspot-secondary",
+    location: "Boston, MA",
+    role: "Engineering",
+    src: "/companies/hubspot.png",
+    year: "YYYY",
+  },
+] as const;
+
+const PROJECT_ITEMS: readonly ProjectItem[] = [
+  {
+    id: "phishing-sim",
+    summary: "Phishing simulator for banks",
+  },
+  {
+    id: "sales-copilot",
+    summary: "Meeting copilot for sales teams",
+  },
+  {
+    id: "ops-portal",
+    summary: "Onboarding portal for fintech ops",
+  },
+] as const;
+
+const DESKTOP_FRAME = {
+  width: 1440,
+  height: 1600,
+} as const;
+
+const MOBILE_FRAME = {
+  width: 390,
+  height: 780,
+} as const;
+
+const DESKTOP_LAYOUT = buildDesktopLayout();
+const MOBILE_LAYOUT = buildMobileLayout();
+
+function buildDesktopLayout(): CanvasLayout {
+  const nodes = [
+    ...buildIntroSection("desktop", {
+      greetingX: 360,
+      greetingY: 86,
+      heroHeight: 300,
+      heroWidth: 300,
+      heroX: 896,
+      heroY: 52,
+      nameHeight: 120,
+      nameWidth: 360,
+      nameX: 360,
+      nameY: 147,
+    }),
+    ...buildSectionHeading("desktop-study-heading", {
+      style: TEXT_STYLES.desktopSection,
+      value: "I study @",
       x: 360,
       y: 406,
-      width: 25,
-      height: 33,
-      baseWidth: 25,
-      baseHeight: 33,
-      fontSize: 32,
-      baseFontSize: 32,
-      value: "I study @",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-education-waterloo-image": {
-      id: "desktop-education-waterloo-image",
-      alt: "University of Waterloo logo",
-      src: "/companies/waterloo.png",
-      x: 360,
-      y: 469,
-      width: 72,
-      height: 72,
-      fit: "contain",
-      type: "image",
-      baseWidth: 72,
-      baseHeight: 72,
-    },
-    "desktop-education-waterloo-label": {
-      id: "desktop-education-waterloo-label",
-      type: "text",
-      x: 456,
-      y: 469,
-      width: 439,
-      height: 26,
-      baseWidth: 439,
-      baseHeight: 26,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "University of Waterloo",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-education-waterloo-role": {
-      id: "desktop-education-waterloo-role",
-      type: "text",
-      x: 456,
-      y: 506,
-      width: 25,
-      height: 13,
-      baseWidth: 25,
-      baseHeight: 13,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Computer Science",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-education-waterloo-year": {
-      id: "desktop-education-waterloo-year",
-      type: "text",
-      x: 1034,
-      y: 469,
-      width: 12,
-      height: 7,
-      baseWidth: 12,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "2028",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-education-waterloo-location": {
-      id: "desktop-education-waterloo-location",
-      type: "text",
-      x: 943,
-      y: 502,
-      width: 24,
-      height: 13,
-      baseWidth: 24,
-      baseHeight: 13,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Waterloo, ON",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-heading": {
-      id: "desktop-work-heading",
-      type: "text",
+    }),
+    ...buildEducationSection("desktop", {
+      imageSize: 72,
+      imageX: 360,
+      labelWidth: 439,
+      leftX: 456,
+      rightColumnWidth: 160,
+      rightEdge: 1075,
+      roleOffsetY: 37,
+      rowY: 469,
+    }),
+    ...buildSectionHeading("desktop-work-heading", {
+      style: TEXT_STYLES.desktopSection,
+      value: "I work/worked @",
       x: 360,
       y: 595,
-      width: 56,
-      height: 33,
-      baseWidth: 56,
-      baseHeight: 33,
-      fontSize: 32,
-      baseFontSize: 32,
-      value: "I work/worked @",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-ramp-image": {
-      id: "desktop-work-ramp-image",
-      alt: "Ramp logo",
-      src: "/companies/ramp.jpeg",
-      x: 360,
-      y: 658,
-      width: 72,
-      height: 72,
-      fit: "contain",
-      type: "image",
-      baseWidth: 72,
-      baseHeight: 72,
-    },
-    "desktop-work-ramp-label": {
-      id: "desktop-work-ramp-label",
-      type: "text",
-      x: 456,
-      y: 658,
-      width: 17,
-      height: 8,
-      baseWidth: 17,
-      baseHeight: 8,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "Ramp",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-ramp-role": {
-      id: "desktop-work-ramp-role",
-      type: "text",
-      x: 456,
-      y: 709,
-      width: 29,
-      height: 7,
-      baseWidth: 29,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-ramp-year": {
-      id: "desktop-work-ramp-year",
-      type: "text",
-      x: 1034,
-      y: 658,
-      width: 11,
-      height: 7,
-      baseWidth: 11,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "2025",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-ramp-location": {
-      id: "desktop-work-ramp-location",
-      type: "text",
-      x: 966,
-      y: 691,
-      width: 12,
-      height: 26,
-      baseWidth: 12,
-      baseHeight: 26,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "New York City, NY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-uber-image": {
-      id: "desktop-work-uber-image",
-      alt: "Uber logo",
-      src: "/companies/uber.png",
-      x: 360,
-      y: 760,
-      width: 72,
-      height: 72,
-      fit: "contain",
-      type: "image",
-      baseWidth: 72,
-      baseHeight: 72,
-    },
-    "desktop-work-uber-label": {
-      id: "desktop-work-uber-label",
-      type: "text",
-      x: 456,
-      y: 760,
-      width: 14,
-      height: 8,
-      baseWidth: 14,
-      baseHeight: 8,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "Uber",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-uber-role": {
-      id: "desktop-work-uber-role",
-      type: "text",
-      x: 456,
-      y: 811,
-      width: 29,
-      height: 7,
-      baseWidth: 29,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-uber-year": {
-      id: "desktop-work-uber-year",
-      type: "text",
-      x: 1034,
-      y: 760,
-      width: 12,
-      height: 7,
-      baseWidth: 12,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "YYYY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-uber-location": {
-      id: "desktop-work-uber-location",
-      type: "text",
-      x: 954,
-      y: 793,
-      width: 26,
-      height: 13,
-      baseWidth: 26,
-      baseHeight: 13,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Sunnyvale, CA",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-hubspot-image": {
-      id: "desktop-work-hubspot-image",
-      alt: "HubSpot logo",
-      src: "/companies/hubspot.png",
-      x: 360,
-      y: 862,
-      width: 72,
-      height: 72,
-      fit: "contain",
-      type: "image",
-      baseWidth: 72,
-      baseHeight: 72,
-    },
-    "desktop-work-hubspot-label": {
-      id: "desktop-work-hubspot-label",
-      type: "text",
-      x: 456,
-      y: 862,
-      width: 25,
-      height: 8,
-      baseWidth: 25,
-      baseHeight: 8,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "HubSpot",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-hubspot-role": {
-      id: "desktop-work-hubspot-role",
-      type: "text",
-      x: 456,
-      y: 913,
-      width: 29,
-      height: 7,
-      baseWidth: 29,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-hubspot-year": {
-      id: "desktop-work-hubspot-year",
-      type: "text",
-      x: 1034,
-      y: 862,
-      width: 12,
-      height: 7,
-      baseWidth: 12,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "YYYY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-hubspot-location": {
-      id: "desktop-work-hubspot-location",
-      type: "text",
-      x: 931,
-      y: 895,
-      width: 18,
-      height: 13,
-      baseWidth: 18,
-      baseHeight: 13,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Boston, MA",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-bridgewell-image": {
-      id: "desktop-work-bridgewell-image",
-      alt: "HubSpot logo",
-      src: "/companies/hubspot.png",
-      x: 360,
-      y: 964,
-      width: 72,
-      height: 72,
-      fit: "contain",
-      type: "image",
-      baseWidth: 72,
-      baseHeight: 72,
-    },
-    "desktop-work-bridgewell-label": {
-      id: "desktop-work-bridgewell-label",
-      type: "text",
-      x: 456,
-      y: 964,
-      width: 25,
-      height: 8,
-      baseWidth: 25,
-      baseHeight: 8,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "HubSpot",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-bridgewell-role": {
-      id: "desktop-work-bridgewell-role",
-      type: "text",
-      x: 456,
-      y: 1015,
-      width: 29,
-      height: 7,
-      baseWidth: 29,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-bridgewell-year": {
-      id: "desktop-work-bridgewell-year",
-      type: "text",
-      x: 1034,
-      y: 964,
-      width: 12,
-      height: 7,
-      baseWidth: 12,
-      baseHeight: 7,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "YYYY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-work-bridgewell-location": {
-      id: "desktop-work-bridgewell-location",
-      type: "text",
-      x: 954,
-      y: 997,
-      width: 18,
-      height: 13,
-      baseWidth: 18,
-      baseHeight: 13,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "Boston, MA",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-built-heading": {
-      id: "desktop-built-heading",
-      type: "text",
+    }),
+    ...buildWorkSection("desktop", {
+      imageSize: 72,
+      labelX: 456,
+      leftX: 360,
+      locationOffsetY: 33,
+      rightColumnWidth: 160,
+      rightEdge: 1075,
+      roleOffsetY: 51,
+      rowGap: 102,
+      startY: 658,
+    }),
+    ...buildSectionHeading("desktop-built-heading", {
+      style: TEXT_STYLES.desktopSection,
+      value: "I've built",
       x: 360,
       y: 1092,
-      width: 18,
-      height: 22,
-      baseWidth: 18,
-      baseHeight: 22,
-      fontSize: 32,
-      baseFontSize: 32,
-      value: "I've built",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-project-phishing-sim-summary": {
-      id: "desktop-project-phishing-sim-summary",
-      type: "text",
+    }),
+    ...buildProjectsSection("desktop", {
+      ctaRightEdge: 1069,
+      rowGap: 55,
+      showCta: true,
+      startY: 1155,
+      summaryWidth: 622,
       x: 360,
-      y: 1155,
-      width: 622,
-      height: 26,
-      baseWidth: 622,
-      baseHeight: 26,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "Phishing simulator for banks aspdo kaspd",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-project-phishing-sim-cta": {
-      id: "desktop-project-phishing-sim-cta",
-      type: "text",
-      x: 1008,
-      y: 1155,
-      width: 17,
-      height: 7,
-      baseWidth: 17,
-      baseHeight: 7,
-      fontSize: 20,
-      baseFontSize: 20,
-      value: "GitHub",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-project-sales-copilot-summary": {
-      id: "desktop-project-sales-copilot-summary",
-      type: "text",
-      x: 360,
-      y: 1210,
-      width: 622,
-      height: 26,
-      baseWidth: 622,
-      baseHeight: 26,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "Realtime meeting copilot for sales teams",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-project-sales-copilot-cta": {
-      id: "desktop-project-sales-copilot-cta",
-      type: "text",
-      x: 1008,
-      y: 1210,
-      width: 17,
-      height: 7,
-      baseWidth: 17,
-      baseHeight: 7,
-      fontSize: 20,
-      baseFontSize: 20,
-      value: "GitHub",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-project-ops-portal-summary": {
-      id: "desktop-project-ops-portal-summary",
-      type: "text",
-      x: 360,
-      y: 1265,
-      width: 622,
-      height: 26,
-      baseWidth: 622,
-      baseHeight: 26,
-      fontSize: 22,
-      baseFontSize: 22,
-      value: "Interactive onboarding portal for fintech ops",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "desktop-project-ops-portal-cta": {
-      id: "desktop-project-ops-portal-cta",
-      type: "text",
-      x: 1008,
-      y: 1265,
-      width: 17,
-      height: 7,
-      baseWidth: 17,
-      baseHeight: 7,
-      fontSize: 20,
-      baseFontSize: 20,
-      value: "GitHub",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-  },
-};
+    }),
+  ];
 
-const MOBILE_LAYOUT: CanvasLayout = {
-  frame: {
-    width: 390,
-    height: 780,
-  },
-  nodeIds: [
-    "mobile-greeting",
-    "mobile-name",
-    "mobile-hero-image",
-    "mobile-study-heading",
-    "mobile-education-waterloo-image",
-    "mobile-education-waterloo-label",
-    "mobile-education-waterloo-role",
-    "mobile-education-waterloo-year",
-    "mobile-education-waterloo-location",
-    "mobile-work-heading",
-    "mobile-work-ramp-image",
-    "mobile-work-ramp-label",
-    "mobile-work-ramp-role",
-    "mobile-work-ramp-year",
-    "mobile-work-ramp-location",
-    "mobile-work-uber-image",
-    "mobile-work-uber-label",
-    "mobile-work-uber-role",
-    "mobile-work-uber-year",
-    "mobile-work-uber-location",
-    "mobile-work-hubspot-image",
-    "mobile-work-hubspot-label",
-    "mobile-work-hubspot-role",
-    "mobile-work-hubspot-year",
-    "mobile-work-hubspot-location",
-    "mobile-work-bridgewell-image",
-    "mobile-work-bridgewell-label",
-    "mobile-work-bridgewell-role",
-    "mobile-work-bridgewell-year",
-    "mobile-work-bridgewell-location",
-    "mobile-built-heading",
-    "mobile-project-phishing-sim-summary",
-    "mobile-project-sales-copilot-summary",
-    "mobile-project-ops-portal-summary",
-  ],
-  nodes: {
-    "mobile-greeting": {
-      id: "mobile-greeting",
-      type: "text",
-      x: 20,
-      y: 20,
-      width: 151,
-      height: 29,
-      baseWidth: 151,
-      baseHeight: 29,
-      fontSize: 24,
-      baseFontSize: 24,
-      value: "Hey there, I'm",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-name": {
-      id: "mobile-name",
-      type: "text",
-      x: 20,
-      y: 40,
-      width: 260,
-      height: 100,
-      baseWidth: 220,
-      baseHeight: 80,
-      fontSize: 59,
-      baseFontSize: 50,
-      value: "Jacob Fu",
-      sizingMode: "fixed",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-hero-image": {
-      id: "mobile-hero-image",
-      alt: "Hero placeholder image",
-      src: "/companies/kaimz.png",
-      x: 280,
-      y: 20,
-      width: 100,
-      height: 100,
-      fit: "cover",
-      type: "image",
-      baseWidth: 120,
-      baseHeight: 100,
-    },
-    "mobile-study-heading": {
-      id: "mobile-study-heading",
-      type: "text",
+  return createLayout(DESKTOP_FRAME, nodes);
+}
+
+function buildMobileLayout(): CanvasLayout {
+  const nodes = [
+    ...buildIntroSection("mobile", {
+      greetingX: 20,
+      greetingY: 20,
+      heroHeight: 100,
+      heroWidth: 100,
+      heroX: 280,
+      heroY: 20,
+      nameHeight: 100,
+      nameWidth: 260,
+      nameX: 20,
+      nameY: 40,
+    }),
+    ...buildSectionHeading("mobile-study-heading", {
+      style: TEXT_STYLES.mobileSection,
+      value: "I study @",
       x: 20,
       y: 120,
-      width: 82,
-      height: 23,
-      baseWidth: 82,
-      baseHeight: 23,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "I study @",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-education-waterloo-image": {
-      id: "mobile-education-waterloo-image",
-      alt: "University of Waterloo logo",
-      src: "/companies/waterloo.png",
-      x: 20,
-      y: 160,
-      width: 44,
-      height: 44,
-      fit: "contain",
-      type: "image",
-      baseWidth: 44,
-      baseHeight: 44,
-    },
-    "mobile-education-waterloo-label": {
-      id: "mobile-education-waterloo-label",
-      type: "text",
-      x: 80,
-      y: 160,
-      width: 180,
-      height: 21,
-      baseWidth: 180,
-      baseHeight: 21,
-      fontSize: 17,
-      baseFontSize: 17,
-      value: "University of Waterloo",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-education-waterloo-role": {
-      id: "mobile-education-waterloo-role",
-      type: "text",
-      x: 80,
-      y: 184,
-      width: 124,
-      height: 18,
-      baseWidth: 124,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Computer Science",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-education-waterloo-year": {
-      id: "mobile-education-waterloo-year",
-      type: "text",
-      x: 340,
-      y: 160,
-      width: 33,
-      height: 18,
-      baseWidth: 33,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "2028",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-education-waterloo-location": {
-      id: "mobile-education-waterloo-location",
-      type: "text",
-      x: 280,
-      y: 180,
-      width: 91,
-      height: 18,
-      baseWidth: 91,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Waterloo, ON",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-heading": {
-      id: "mobile-work-heading",
-      type: "text",
+    }),
+    ...buildEducationSection("mobile", {
+      imageSize: 44,
+      imageX: 20,
+      labelWidth: 180,
+      leftX: 80,
+      rightColumnWidth: 120,
+      rightEdge: 380,
+      roleOffsetY: 24,
+      rowY: 160,
+    }),
+    ...buildSectionHeading("mobile-work-heading", {
+      style: TEXT_STYLES.mobileSection,
+      value: "I work/worked @",
       x: 20,
       y: 220,
-      width: 133,
-      height: 21,
-      baseWidth: 133,
-      baseHeight: 21,
-      fontSize: 17,
-      baseFontSize: 17,
-      value: "I work/worked @",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-ramp-image": {
-      id: "mobile-work-ramp-image",
-      alt: "Ramp logo",
-      src: "/companies/ramp.jpeg",
-      x: 20,
-      y: 260,
-      width: 44,
-      height: 44,
-      fit: "contain",
-      type: "image",
-      baseWidth: 44,
-      baseHeight: 44,
-    },
-    "mobile-work-ramp-label": {
-      id: "mobile-work-ramp-label",
-      type: "text",
-      x: 80,
-      y: 260,
-      width: 46,
-      height: 21,
-      baseWidth: 46,
-      baseHeight: 21,
-      fontSize: 17,
-      baseFontSize: 17,
-      value: "Ramp",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-ramp-role": {
-      id: "mobile-work-ramp-role",
-      type: "text",
-      x: 80,
-      y: 284,
-      width: 81,
-      height: 18,
-      baseWidth: 81,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-ramp-year": {
-      id: "mobile-work-ramp-year",
-      type: "text",
-      x: 340,
-      y: 260,
-      width: 31,
-      height: 18,
-      baseWidth: 31,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "2025",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-ramp-location": {
-      id: "mobile-work-ramp-location",
-      type: "text",
-      x: 260,
-      y: 280,
-      width: 120,
-      height: 18,
-      baseWidth: 120,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "New York City, NY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-uber-image": {
-      id: "mobile-work-uber-image",
-      alt: "Uber logo",
-      src: "/companies/uber.png",
-      x: 20,
-      y: 340,
-      width: 44,
-      height: 44,
-      fit: "contain",
-      type: "image",
-      baseWidth: 44,
-      baseHeight: 44,
-    },
-    "mobile-work-uber-label": {
-      id: "mobile-work-uber-label",
-      type: "text",
-      x: 80,
-      y: 340,
-      width: 39,
-      height: 21,
-      baseWidth: 39,
-      baseHeight: 21,
-      fontSize: 17,
-      baseFontSize: 17,
-      value: "Uber",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-uber-role": {
-      id: "mobile-work-uber-role",
-      type: "text",
-      x: 80,
-      y: 364,
-      width: 81,
-      height: 18,
-      baseWidth: 81,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-uber-year": {
-      id: "mobile-work-uber-year",
-      type: "text",
-      x: 340,
-      y: 340,
-      width: 32,
-      height: 18,
-      baseWidth: 32,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "YYYY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-uber-location": {
-      id: "mobile-work-uber-location",
-      type: "text",
-      x: 280,
-      y: 360,
-      width: 93,
-      height: 18,
-      baseWidth: 93,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Sunnyvale, CA",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-hubspot-image": {
-      id: "mobile-work-hubspot-image",
-      alt: "HubSpot logo",
-      src: "/companies/hubspot.png",
-      x: 20,
-      y: 420,
-      width: 44,
-      height: 44,
-      fit: "contain",
-      type: "image",
-      baseWidth: 44,
-      baseHeight: 44,
-    },
-    "mobile-work-hubspot-label": {
-      id: "mobile-work-hubspot-label",
-      type: "text",
-      x: 80,
-      y: 420,
-      width: 68,
-      height: 21,
-      baseWidth: 68,
-      baseHeight: 21,
-      fontSize: 17,
-      baseFontSize: 17,
-      value: "HubSpot",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-hubspot-role": {
-      id: "mobile-work-hubspot-role",
-      type: "text",
-      x: 80,
-      y: 444,
-      width: 81,
-      height: 18,
-      baseWidth: 81,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-hubspot-year": {
-      id: "mobile-work-hubspot-year",
-      type: "text",
-      x: 340,
-      y: 420,
-      width: 32,
-      height: 18,
-      baseWidth: 32,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "YYYY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-hubspot-location": {
-      id: "mobile-work-hubspot-location",
-      type: "text",
-      x: 300,
-      y: 440,
-      width: 74,
-      height: 18,
-      baseWidth: 74,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Boston, MA",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-bridgewell-image": {
-      id: "mobile-work-bridgewell-image",
-      alt: "HubSpot logo",
-      src: "/companies/hubspot.png",
-      x: 20,
-      y: 500,
-      width: 44,
-      height: 44,
-      fit: "contain",
-      type: "image",
-      baseWidth: 44,
-      baseHeight: 44,
-    },
-    "mobile-work-bridgewell-label": {
-      id: "mobile-work-bridgewell-label",
-      type: "text",
-      x: 80,
-      y: 500,
-      width: 68,
-      height: 21,
-      baseWidth: 68,
-      baseHeight: 21,
-      fontSize: 17,
-      baseFontSize: 17,
-      value: "HubSpot",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 600,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-bridgewell-role": {
-      id: "mobile-work-bridgewell-role",
-      type: "text",
-      x: 80,
-      y: 524,
-      width: 81,
-      height: 18,
-      baseWidth: 81,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Engineering",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-bridgewell-year": {
-      id: "mobile-work-bridgewell-year",
-      type: "text",
-      x: 340,
-      y: 500,
-      width: 32,
-      height: 18,
-      baseWidth: 32,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "YYYY",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-work-bridgewell-location": {
-      id: "mobile-work-bridgewell-location",
-      type: "text",
-      x: 300,
-      y: 520,
-      width: 74,
-      height: 18,
-      baseWidth: 74,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Boston, MA",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-built-heading": {
-      id: "mobile-built-heading",
-      type: "text",
+    }),
+    ...buildWorkSection("mobile", {
+      imageSize: 44,
+      labelX: 80,
+      leftX: 20,
+      locationOffsetY: 20,
+      rightColumnWidth: 120,
+      rightEdge: 380,
+      roleOffsetY: 24,
+      rowGap: 80,
+      startY: 260,
+    }),
+    ...buildSectionHeading("mobile-built-heading", {
+      style: TEXT_STYLES.mobileSection,
+      value: "I've built",
       x: 20,
       y: 580,
-      width: 70,
-      height: 23,
-      baseWidth: 70,
-      baseHeight: 23,
-      fontSize: 19,
-      baseFontSize: 19,
-      value: "I've built",
-      sizingMode: "hug",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
-    "mobile-project-phishing-sim-summary": {
-      id: "mobile-project-phishing-sim-summary",
-      type: "text",
+    }),
+    ...buildProjectsSection("mobile", {
+      rowGap: 20,
+      showCta: false,
+      startY: 620,
+      summaryWidth: 350,
       x: 20,
-      y: 620,
-      width: 350,
-      height: 18,
-      baseWidth: 350,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Phishing simulator for banks",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
+    }),
+  ];
+
+  return createLayout(MOBILE_FRAME, nodes);
+}
+
+function buildIntroSection(
+  prefix: "desktop" | "mobile",
+  config: IntroLayoutConfig,
+): CanvasNode[] {
+  const eyebrowStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopEyebrow : TEXT_STYLES.mobileEyebrow;
+  const heroNameStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopHeroName : TEXT_STYLES.mobileHeroName;
+
+  return [
+    createHugTextNode(`${prefix}-greeting`, {
+      style: eyebrowStyle,
+      value: "Hey there, I'm",
+      x: config.greetingX,
+      y: config.greetingY,
+    }),
+    createFixedTextNode(`${prefix}-name`, {
+      height: config.nameHeight,
+      style: heroNameStyle,
+      value: "Jacob Fu",
+      width: config.nameWidth,
+      x: config.nameX,
+      y: config.nameY,
+    }),
+    createImageNode(`${prefix}-hero-image`, {
+      alt: "Hero placeholder image",
+      fit: "cover",
+      height: config.heroHeight,
+      src: "/companies/kaimz.png",
+      width: config.heroWidth,
+      x: config.heroX,
+      y: config.heroY,
+    }),
+  ];
+}
+
+function buildEducationSection(
+  prefix: "desktop" | "mobile",
+  config: EducationLayoutConfig,
+): CanvasNode[] {
+  const titleStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopTitle : TEXT_STYLES.mobileTitle;
+  const bodyStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopBody : TEXT_STYLES.mobileBody;
+
+  const labelNode = createWrapTextNode(`${prefix}-education-waterloo-label`, {
+    style: titleStyle,
+    value: "University of Waterloo",
+    width: config.labelWidth,
+    x: config.leftX,
+    y: config.rowY,
+  });
+  const roleNode = createHugTextNode(`${prefix}-education-waterloo-role`, {
+    style: bodyStyle,
+    value: "Computer Science",
+    x: config.leftX,
+    y: config.rowY + config.roleOffsetY,
+  });
+  const yearNode = createRightAlignedTextNode(
+    `${prefix}-education-waterloo-year`,
+      {
+        columnWidth: config.rightColumnWidth,
+        rightEdge: config.rightEdge,
+        style: bodyStyle,
+        value: "2028",
+      y: config.rowY,
     },
-    "mobile-project-sales-copilot-summary": {
-      id: "mobile-project-sales-copilot-summary",
-      type: "text",
-      x: 20,
-      y: 640,
-      width: 350,
-      height: 18,
-      baseWidth: 350,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Meeting copilot for sales teams",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
+  );
+  const locationNode = createRightAlignedTextNode(
+    `${prefix}-education-waterloo-location`,
+      {
+        columnWidth: config.rightColumnWidth,
+        rightEdge: config.rightEdge,
+        style: bodyStyle,
+        value: "Waterloo, ON",
+      y: config.rowY + config.roleOffsetY,
     },
-    "mobile-project-ops-portal-summary": {
-      id: "mobile-project-ops-portal-summary",
-      type: "text",
-      x: 20,
-      y: 660,
-      width: 350,
-      height: 18,
-      baseWidth: 350,
-      baseHeight: 18,
-      fontSize: 15,
-      baseFontSize: 15,
-      value: "Onboarding portal for fintech ops",
-      sizingMode: "wrap",
-      textColor: "#0f172a",
-      backgroundColor: "transparent",
-      fontWeight: 500,
-      paddingX: 0,
-      paddingY: 0,
-      borderRadius: 0,
-    },
+  );
+
+  return [
+    createImageNode(`${prefix}-education-waterloo-image`, {
+      alt: "University of Waterloo logo",
+      fit: "contain",
+      height: config.imageSize,
+      src: "/companies/waterloo.png",
+      width: config.imageSize,
+      x: config.imageX,
+      y: config.rowY,
+    }),
+    labelNode,
+    roleNode,
+    yearNode,
+    locationNode,
+  ];
+}
+
+function buildWorkSection(
+  prefix: "desktop" | "mobile",
+  config: WorkLayoutConfig,
+): CanvasNode[] {
+  const titleStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopTitle : TEXT_STYLES.mobileTitle;
+  const bodyStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopBody : TEXT_STYLES.mobileBody;
+
+  return WORK_ITEMS.flatMap((item, index) => {
+    const rowY = config.startY + config.rowGap * index;
+    const labelNode = createHugTextNode(`${prefix}-work-${item.id}-label`, {
+      style: titleStyle,
+      value: item.company,
+      x: config.labelX,
+      y: rowY,
+    });
+    const roleNode = createHugTextNode(`${prefix}-work-${item.id}-role`, {
+      style: bodyStyle,
+      value: item.role,
+      x: config.labelX,
+      y: rowY + config.roleOffsetY,
+    });
+    const yearNode = createRightAlignedTextNode(
+      `${prefix}-work-${item.id}-year`,
+      {
+        columnWidth: config.rightColumnWidth,
+        rightEdge: config.rightEdge,
+        style: bodyStyle,
+        value: item.year,
+        y: rowY,
+      },
+    );
+    const locationNode = createRightAlignedTextNode(
+      `${prefix}-work-${item.id}-location`,
+      {
+        columnWidth: config.rightColumnWidth,
+        rightEdge: config.rightEdge,
+        style: bodyStyle,
+        value: item.location,
+        y: rowY + config.locationOffsetY,
+      },
+    );
+
+    return [
+      createImageNode(`${prefix}-work-${item.id}-image`, {
+        alt: item.alt,
+        fit: "contain",
+        height: config.imageSize,
+        src: item.src,
+        width: config.imageSize,
+        x: config.leftX,
+        y: rowY,
+      }),
+      labelNode,
+      roleNode,
+      yearNode,
+      locationNode,
+    ];
+  });
+}
+
+function buildProjectsSection(
+  prefix: "desktop",
+  config: DesktopProjectsLayoutConfig,
+): CanvasNode[];
+function buildProjectsSection(
+  prefix: "mobile",
+  config: MobileProjectsLayoutConfig,
+): CanvasNode[];
+function buildProjectsSection(
+  prefix: "desktop" | "mobile",
+  config: DesktopProjectsLayoutConfig | MobileProjectsLayoutConfig,
+): CanvasNode[] {
+  const summaryStyle =
+    prefix === "desktop" ? TEXT_STYLES.desktopProject : TEXT_STYLES.mobileProject;
+  const ctaStyle = TEXT_STYLES.desktopProjectCta;
+
+  return PROJECT_ITEMS.flatMap((item, index) => {
+    const rowY = config.startY + config.rowGap * index;
+    const summaryNode = createWrapTextNode(
+      `${prefix}-project-${item.id}-summary`,
+      {
+        style: summaryStyle,
+        value: item.summary,
+        width: config.summaryWidth,
+        x: config.x,
+        y: rowY,
+      },
+    );
+
+    if (!config.showCta) {
+      return [summaryNode];
+    }
+
+    const ctaNode = createRightAlignedTextNode(`${prefix}-project-${item.id}-cta`, {
+      rightEdge: config.ctaRightEdge,
+      style: ctaStyle,
+      value: "GitHub",
+      y: rowY,
+    });
+
+    return [summaryNode, ctaNode];
+  });
+}
+
+function buildSectionHeading(
+  id: string,
+  input: {
+    style: TextStyleToken;
+    value: string;
+    x: number;
+    y: number;
   },
-};
+): CanvasNode[] {
+  return [
+    createHugTextNode(id, {
+      style: input.style,
+      value: input.value,
+      x: input.x,
+      y: input.y,
+    }),
+  ];
+}
+
+function createLayout(
+  frame: CanvasLayout["frame"],
+  nodes: readonly CanvasNode[],
+): CanvasLayout {
+  return {
+    frame: { ...frame },
+    nodeIds: nodes.map((node) => node.id),
+    nodes: Object.fromEntries(nodes.map((node) => [node.id, node])) as Record<
+      CanvasNodeId,
+      CanvasNode
+    >,
+  };
+}
+
+function createTextStyle(
+  overrides: Partial<TextStyleToken>,
+): TextStyleToken {
+  return {
+    ...DEFAULT_TEXT_STYLE,
+    ...overrides,
+  };
+}
+
+function createHugTextNode(
+  id: string,
+  input: {
+    style: TextStyleToken;
+    value: string;
+    x: number;
+    y: number;
+  },
+): CanvasNode {
+  const size = getTextNodeSize({
+    fontSize: input.style.fontSize,
+    fontWeight: input.style.fontWeight,
+    paddingX: input.style.paddingX,
+    paddingY: input.style.paddingY,
+    value: input.value,
+  });
+
+  return createTextNodeBase(id, {
+    height: size.height,
+    sizingMode: "hug",
+    style: input.style,
+    textAlign: "left",
+    value: input.value,
+    width: size.width,
+    x: input.x,
+    y: input.y,
+  });
+}
+
+function createWrapTextNode(
+  id: string,
+  input: {
+    style: TextStyleToken;
+    value: string;
+    width: number;
+    x: number;
+    y: number;
+  },
+): CanvasNode {
+  const size = getWrappedTextNodeSize({
+    fontSize: input.style.fontSize,
+    fontWeight: input.style.fontWeight,
+    paddingX: input.style.paddingX,
+    paddingY: input.style.paddingY,
+    value: input.value,
+    width: input.width,
+  });
+
+  return createTextNodeBase(id, {
+    height: size.height,
+    sizingMode: "wrap",
+    style: input.style,
+    textAlign: "left",
+    value: input.value,
+    width: input.width,
+    x: input.x,
+    y: input.y,
+  });
+}
+
+function createFixedTextNode(
+  id: string,
+  input: {
+    height: number;
+    style: TextStyleToken;
+    value: string;
+    width: number;
+    x: number;
+    y: number;
+  },
+): CanvasNode {
+  return createTextNodeBase(id, {
+    height: input.height,
+    sizingMode: "fixed",
+    style: input.style,
+    textAlign: "left",
+    value: input.value,
+    width: input.width,
+    x: input.x,
+    y: input.y,
+  });
+}
+
+function createRightAlignedTextNode(
+  id: string,
+  input: {
+    columnWidth: number;
+    rightEdge: number;
+    style: TextStyleToken;
+    value: string;
+    y: number;
+  },
+): CanvasNode {
+  const size = getWrappedTextNodeSize({
+    fontSize: input.style.fontSize,
+    fontWeight: input.style.fontWeight,
+    paddingX: input.style.paddingX,
+    paddingY: input.style.paddingY,
+    value: input.value,
+    width: input.columnWidth,
+  });
+
+  return createTextNodeBase(id, {
+    height: size.height,
+    sizingMode: "fixed",
+    style: input.style,
+    textAlign: "right",
+    value: input.value,
+    width: input.columnWidth,
+    x: input.rightEdge - input.columnWidth,
+    y: input.y,
+  });
+}
+
+function createTextNodeBase(
+  id: string,
+  input: {
+    height: number;
+    sizingMode: TextSizingMode;
+    style: TextStyleToken;
+    textAlign: TextAlignMode;
+    value: string;
+    width: number;
+    x: number;
+    y: number;
+  },
+): CanvasNode {
+  return {
+    id,
+    type: "text",
+    x: input.x,
+    y: input.y,
+    width: input.width,
+    height: input.height,
+    baseWidth: input.width,
+    baseHeight: input.height,
+    fontSize: input.style.fontSize,
+    baseFontSize: input.style.fontSize,
+    value: input.value,
+    sizingMode: input.sizingMode,
+    textAlign: input.textAlign,
+    textColor: input.style.textColor,
+    backgroundColor: input.style.backgroundColor,
+    fontWeight: input.style.fontWeight,
+    paddingX: input.style.paddingX,
+    paddingY: input.style.paddingY,
+    borderRadius: input.style.borderRadius,
+  };
+}
+
+function createImageNode(
+  id: string,
+  input: {
+    alt: string;
+    fit: ImageFitMode;
+    height: number;
+    src: string;
+    width: number;
+    x: number;
+    y: number;
+  },
+): CanvasNode {
+  return {
+    id,
+    alt: input.alt,
+    src: input.src,
+    x: input.x,
+    y: input.y,
+    width: input.width,
+    height: input.height,
+    fit: input.fit,
+    type: "image",
+    baseWidth: input.width,
+    baseHeight: input.height,
+  };
+}
 
 /**
  * Clones a layout preset so editing session state cannot mutate the authored

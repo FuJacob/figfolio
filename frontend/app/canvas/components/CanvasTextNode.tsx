@@ -35,6 +35,7 @@ export function CanvasTextNodeView({
           overflow: node.sizingMode === "fixed" ? "hidden" : "visible",
           overflowWrap: node.sizingMode === "fixed" ? undefined : "break-word",
           padding: `${node.paddingY}px ${node.paddingX}px`,
+          textAlign: node.textAlign,
           width:
             node.sizingMode === "hug"
               ? "fit-content"
