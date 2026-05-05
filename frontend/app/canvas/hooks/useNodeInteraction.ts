@@ -1,10 +1,13 @@
 import { type PointerEvent, useState } from "react";
+import { useCanvasViewport } from "../CanvasViewportContext";
 import { useCanvasStore } from "../store";
+import { viewportPointToCanvasPoint } from "../viewportTransform";
 import type { CanvasNode, DragInteraction, ViewportPoint } from "../types";
 
 export function useNodeInteraction(node: CanvasNode) {
   const moveNode = useCanvasStore((state) => state.moveNode);
   const selectNode = useCanvasStore((state) => state.selectNode);
+  const viewport = useCanvasViewport();
   const [interaction, setInteraction] = useState<DragInteraction | null>(null);
 
   function handleNodePointerDown(event: PointerEvent<HTMLDivElement>) {
@@ -16,7 +19,7 @@ export function useNodeInteraction(node: CanvasNode) {
       mode: "drag",
       nodeId: node.id,
       pointerId: event.pointerId,
-      startPointer: getViewportPoint(event),
+      startPointer: viewportPointToCanvasPoint(getViewportPoint(event), viewport),
       startNodePosition: { x: node.x, y: node.y },
     });
   }
@@ -26,7 +29,7 @@ export function useNodeInteraction(node: CanvasNode) {
       return;
     }
 
-    const pointer = getViewportPoint(event);
+    const pointer = viewportPointToCanvasPoint(getViewportPoint(event), viewport);
 
     moveNode(interaction.nodeId, {
       x:

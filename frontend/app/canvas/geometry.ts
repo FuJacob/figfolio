@@ -8,17 +8,17 @@ import {
 import type {
   Bounds,
   CanvasNode,
+  CanvasPoint,
   ResizeHandle,
   Size,
   TextCanvasNode,
-  ViewportPoint,
 } from "./types";
 
 type ResizeBoundsInput = {
   handle: ResizeHandle;
-  pointer: ViewportPoint;
+  pointer: CanvasPoint;
   startNode: CanvasNode;
-  startPointer: ViewportPoint;
+  startPointer: CanvasPoint;
 };
 
 /**

@@ -6,6 +6,7 @@ import type { CanvasLayout, CanvasLayouts, CanvasNode } from "./types";
  */
 export function normalizeLayout(layout: CanvasLayout): CanvasLayout {
   return {
+    frame: { ...layout.frame },
     nodeIds: [...layout.nodeIds],
     nodes: Object.fromEntries(
       layout.nodeIds
@@ -39,6 +40,7 @@ const MOBILE_LAYOUT: CanvasLayout = ${mobileLayout};
  */
 export function cloneLayout(layout: CanvasLayout): CanvasLayout {
   return {
+    frame: { ...layout.frame },
     nodeIds: [...layout.nodeIds],
     nodes: Object.fromEntries(
       Object.entries(layout.nodes).map(([id, node]) => [id, cloneNode(node)]),

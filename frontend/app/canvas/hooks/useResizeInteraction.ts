@@ -1,6 +1,8 @@
 import { type PointerEvent, useState } from "react";
+import { useCanvasViewport } from "../CanvasViewportContext";
 import { getResizedBounds } from "../geometry";
 import { useCanvasStore } from "../store";
+import { viewportPointToCanvasPoint } from "../viewportTransform";
 import type { CanvasNode, ResizeHandle, ResizeInteraction, ViewportPoint } from "../types";
 
 /**
@@ -9,6 +11,7 @@ import type { CanvasNode, ResizeHandle, ResizeInteraction, ViewportPoint } from 
  */
 export function useResizeInteraction(node: CanvasNode) {
   const resizeNode = useCanvasStore((state) => state.resizeNode);
+  const viewport = useCanvasViewport();
   const [interaction, setInteraction] = useState<ResizeInteraction | null>(null);
 
   function handleResizePointerDown(
@@ -23,7 +26,7 @@ export function useResizeInteraction(node: CanvasNode) {
       handle,
       nodeId: node.id,
       pointerId: event.pointerId,
-      startPointer: getViewportPoint(event),
+      startPointer: viewportPointToCanvasPoint(getViewportPoint(event), viewport),
       startNode: node,
     });
   }
@@ -39,7 +42,7 @@ export function useResizeInteraction(node: CanvasNode) {
       interaction.nodeId,
       getResizedBounds({
         handle: interaction.handle,
-        pointer: getViewportPoint(event),
+        pointer: viewportPointToCanvasPoint(getViewportPoint(event), viewport),
         startNode: interaction.startNode,
         startPointer: interaction.startPointer,
       }),

@@ -19,6 +19,8 @@ export type Size = {
   height: number;
 };
 
+export type CanvasFrame = Size;
+
 export type Bounds = CanvasPoint & Size;
 
 export type BaseCanvasNode = Bounds & {
@@ -52,11 +54,21 @@ export type ImageCanvasNode = BaseCanvasNode & {
 export type CanvasNode = TextCanvasNode | ImageCanvasNode;
 
 export type CanvasLayout = {
+  frame: CanvasFrame;
   nodeIds: CanvasNodeId[];
   nodes: Record<CanvasNodeId, CanvasNode>;
 };
 
 export type CanvasLayouts = Record<LayoutMode, CanvasLayout>;
+
+export type CanvasViewportTransform = {
+  offsetX: number;
+  offsetY: number;
+  renderedHeight: number;
+  renderedWidth: number;
+  scale: number;
+  scrollHeight: number;
+};
 
 export type ResizeHandle =
   | "top-left"
@@ -68,7 +80,7 @@ export type DragInteraction = {
   mode: "drag";
   nodeId: CanvasNodeId;
   pointerId: number;
-  startPointer: ViewportPoint;
+  startPointer: CanvasPoint;
   startNodePosition: CanvasPoint;
 };
 
@@ -77,7 +89,7 @@ export type ResizeInteraction = {
   handle: ResizeHandle;
   nodeId: CanvasNodeId;
   pointerId: number;
-  startPointer: ViewportPoint;
+  startPointer: CanvasPoint;
   startNode: CanvasNode;
 };
 

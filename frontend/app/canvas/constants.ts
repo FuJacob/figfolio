@@ -4,6 +4,7 @@ export const GRID_SIZE = 20;
 export const GRID_DOT_COLOR = "#cbd5e1";
 export const GRID_DOT_SIZE = 2;
 export const DESKTOP_LAYOUT_MIN_WIDTH = 768;
+export const CANVAS_VIEWPORT_PADDING = 24;
 export const IMAGE_NODE_FRAME_PADDING = 5;
 export const IMAGE_NODE_FRAME_RADIUS = 18;
 export const IMAGE_NODE_CONTENT_RADIUS =
