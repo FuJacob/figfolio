@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CanvasViewportProvider } from "../CanvasViewportContext";
 import { useCanvasViewportTransform } from "../hooks/useCanvasViewportTransform";
 import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
@@ -13,12 +13,14 @@ import { SelectionOverlay } from "./SelectionOverlay";
 import { SocialDock } from "./SocialDock";
 
 export function CanvasEditor() {
+  const [showDevTools, setShowDevTools] = useState(false);
+  const handleDevToolsOpen = () => setShowDevTools(true);
   const layoutMode = useResponsiveLayoutMode();
   const layout = useCanvasStore((state) => state.layouts[state.activeLayout]);
   const clearSelection = useCanvasStore((state) => state.clearSelection);
   const selectedNode = useCanvasStore((state) =>
     state.selectedNodeId
-      ? state.layouts[state.activeLayout].nodes[state.selectedNodeId] ?? null
+      ? (state.layouts[state.activeLayout].nodes[state.selectedNodeId] ?? null)
       : null,
   );
   const setActiveLayout = useCanvasStore((state) => state.setActiveLayout);
@@ -57,7 +59,24 @@ export function CanvasEditor() {
             </div>
           </div>
         </div>
-        <CanvasDevTools />
+        {showDevTools ? (
+          <>
+            <button
+              className="fixed right-1 top-1 z-50"
+              onClick={() => setShowDevTools(false)}
+            >
+              Close
+            </button>
+            <CanvasDevTools />
+          </>
+        ) : (
+          <button
+            className="fixed right-4 top-4 z-50"
+            onClick={handleDevToolsOpen}
+          >
+            Open
+          </button>
+        )}
         <SocialDock />
       </main>
     </CanvasViewportProvider>
