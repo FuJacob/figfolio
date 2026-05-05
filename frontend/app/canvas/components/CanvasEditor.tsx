@@ -25,7 +25,7 @@ export function CanvasEditor() {
     <CanvasViewportProvider value={viewport}>
       <main
         aria-label="Figfolio canvas"
-        className="relative h-screen w-screen overflow-auto bg-slate-50"
+        className="figfolio-cursor relative h-screen w-screen overflow-auto bg-slate-50"
         onPointerDown={clearSelection}
       >
         <div

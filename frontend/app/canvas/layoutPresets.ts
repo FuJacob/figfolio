@@ -35,6 +35,11 @@ type ProjectItem = {
   summary: string;
 };
 
+type EnjoyItem = {
+  id: string;
+  summary: string;
+};
+
 type IntroLayoutConfig = {
   greetingX: number;
   greetingY: number;
@@ -71,15 +76,11 @@ type WorkLayoutConfig = {
   startY: number;
 };
 
-type ProjectsLayoutConfig = {
-  rowGap: number;
+type BulletListLayoutConfig = {
+  gap: number;
   startY: number;
   summaryWidth: number;
   x: number;
-};
-
-type MobileProjectsLayoutConfig = ProjectsLayoutConfig & {
-  showCta: false;
 };
 
 const TRANSPARENT = "transparent";
@@ -98,6 +99,10 @@ const DEFAULT_TEXT_STYLE: TextStyleToken = {
 const TEXT_STYLES = {
   mobileBody: createTextStyle({
     fontSize: 15,
+    fontWeight: 500,
+  }),
+  mobileBullet: createTextStyle({
+    fontSize: 14,
     fontWeight: 500,
   }),
   mobileEyebrow: createTextStyle({
@@ -164,87 +169,142 @@ const WORK_ITEMS: readonly WorkItem[] = [
 const PROJECT_ITEMS: readonly ProjectItem[] = [
   {
     id: "phishing-sim",
-    summary: "Phishing simulator for banks",
+    summary: "• Phishing simulator for banks",
   },
   {
     id: "sales-copilot",
-    summary: "Meeting copilot for sales teams",
+    summary: "• Meeting copilot for sales teams",
   },
   {
     id: "ops-portal",
-    summary: "Onboarding portal for fintech ops",
+    summary: "• Onboarding portal for fintech ops",
+  },
+] as const;
+
+const ENJOY_ITEMS: readonly EnjoyItem[] = [
+  {
+    id: "sports",
+    summary: "• Playing volleyball 🏐 and badminton 🏸 with friends",
+  },
+  {
+    id: "valorant",
+    summary: "• I main Jett on Valorant, peak Ascendant 2 🎮",
+  },
+  {
+    id: "clash-royale",
+    summary: "• Permanently banned from Clash Royale 🚫",
   },
 ] as const;
 
 const MOBILE_FRAME = {
   width: 390,
-  height: 780,
+  height: 980,
 } as const;
 const LAYOUT_PRESET = buildLayout();
 
 function buildLayout(): CanvasLayout {
+  const sectionX = 0;
+  const rightEdge = 380;
+  const sectionGap = 36;
+  const headingToContentGap = 40;
+  const bulletListWidth = MOBILE_FRAME.width;
+
+  const introNodes = buildIntroSection("mobile", {
+    greetingX: sectionX,
+    greetingY: 20,
+    heroHeight: 100,
+    heroWidth: 100,
+    heroX: 280,
+    heroY: 20,
+    nameHeight: 100,
+    nameWidth: 260,
+    nameX: sectionX,
+    nameY: 40,
+  });
+
+  const studyHeadingNodes = buildSectionHeading("mobile-study-heading", {
+    style: TEXT_STYLES.mobileSection,
+    value: "I study @",
+    x: sectionX,
+    y: 120,
+  });
+  const studyNodes = buildEducationSection("mobile", {
+    imageSize: 44,
+    imageX: sectionX,
+    labelWidth: 180,
+    leftX: 60,
+    rightColumnWidth: 120,
+    rightEdge,
+    roleOffsetY: 24,
+    rowY: 160,
+  });
+
+  const enjoyHeadingY = getNodesBottom(studyNodes) + sectionGap;
+  const enjoyHeadingNodes = buildSectionHeading("mobile-enjoy-heading", {
+    style: TEXT_STYLES.mobileSection,
+    value: "Fun facts about me",
+    x: sectionX,
+    y: enjoyHeadingY,
+  });
+  const enjoyNodes = buildBulletListSection("mobile-enjoy", ENJOY_ITEMS, {
+    gap: 20,
+    startY: enjoyHeadingY + headingToContentGap,
+    summaryWidth: bulletListWidth,
+    x: sectionX,
+  });
+
+  const projectsHeadingY = getNodesBottom(enjoyNodes) + sectionGap;
+  const projectHeadingNodes = buildSectionHeading("mobile-built-heading", {
+    style: TEXT_STYLES.mobileSection,
+    value: "Some cool projects I've built",
+    x: sectionX,
+    y: projectsHeadingY,
+  });
+  const projectNodes = buildBulletListSection("mobile-project", PROJECT_ITEMS, {
+    gap: 20,
+    startY: projectsHeadingY + headingToContentGap,
+    summaryWidth: bulletListWidth,
+    x: sectionX,
+  });
+
+  const workHeadingY = getNodesBottom(projectNodes) + sectionGap;
+  const workHeadingNodes = buildSectionHeading("mobile-work-heading", {
+    style: TEXT_STYLES.mobileSection,
+    value: "Some places I work/worked @",
+    x: sectionX,
+    y: workHeadingY,
+  });
+  const workNodes = buildWorkSection("mobile", {
+    imageSize: 44,
+    labelX: 60,
+    leftX: sectionX,
+    locationOffsetY: 20,
+    rightColumnWidth: 120,
+    rightEdge,
+    roleOffsetY: 24,
+    rowGap: 80,
+    startY: workHeadingY + headingToContentGap,
+  });
+
   const nodes = [
-    ...buildIntroSection("mobile", {
-      greetingX: 20,
-      greetingY: 20,
-      heroHeight: 100,
-      heroWidth: 100,
-      heroX: 280,
-      heroY: 20,
-      nameHeight: 100,
-      nameWidth: 260,
-      nameX: 20,
-      nameY: 40,
-    }),
-    ...buildSectionHeading("mobile-study-heading", {
-      style: TEXT_STYLES.mobileSection,
-      value: "I study @",
-      x: 20,
-      y: 120,
-    }),
-    ...buildEducationSection("mobile", {
-      imageSize: 44,
-      imageX: 20,
-      labelWidth: 180,
-      leftX: 80,
-      rightColumnWidth: 120,
-      rightEdge: 380,
-      roleOffsetY: 24,
-      rowY: 160,
-    }),
-    ...buildSectionHeading("mobile-work-heading", {
-      style: TEXT_STYLES.mobileSection,
-      value: "I work/worked @",
-      x: 20,
-      y: 220,
-    }),
-    ...buildWorkSection("mobile", {
-      imageSize: 44,
-      labelX: 80,
-      leftX: 20,
-      locationOffsetY: 20,
-      rightColumnWidth: 120,
-      rightEdge: 380,
-      roleOffsetY: 24,
-      rowGap: 80,
-      startY: 260,
-    }),
-    ...buildSectionHeading("mobile-built-heading", {
-      style: TEXT_STYLES.mobileSection,
-      value: "I've built",
-      x: 20,
-      y: 580,
-    }),
-    ...buildProjectsSection("mobile", {
-      rowGap: 20,
-      showCta: false,
-      startY: 620,
-      summaryWidth: 350,
-      x: 20,
-    }),
+    ...introNodes,
+    ...studyHeadingNodes,
+    ...studyNodes,
+    ...enjoyHeadingNodes,
+    ...enjoyNodes,
+    ...projectHeadingNodes,
+    ...projectNodes,
+    ...workHeadingNodes,
+    ...workNodes,
   ];
 
-  return createLayout(MOBILE_FRAME, nodes);
+  return createLayout(
+    {
+      ...MOBILE_FRAME,
+      height: getNodesBottom(nodes) + 40,
+    },
+    nodes,
+  );
 }
 
 function buildIntroSection(
@@ -390,27 +450,27 @@ function buildWorkSection(
   });
 }
 
-function buildProjectsSection(
-  prefix: "mobile",
-  config: MobileProjectsLayoutConfig,
+function buildBulletListSection(
+  prefix: string,
+  items: readonly { id: string; summary: string }[],
+  config: BulletListLayoutConfig,
 ): CanvasNode[] {
-  return PROJECT_ITEMS.flatMap((item, index) => {
-    const rowY = config.startY + config.rowGap * index;
-    const summaryNode = createWrapTextNode(
-      `${prefix}-project-${item.id}-summary`,
-      {
-        style: TEXT_STYLES.mobileProject,
-        value: item.summary,
-        width: config.summaryWidth,
-        x: config.x,
-        y: rowY,
-      },
-    );
+  const nodes: CanvasNode[] = [];
+  let currentY = config.startY;
 
-    if (!config.showCta) {
-      return [summaryNode];
-    }
-  });
+  for (const item of items) {
+    const node = createWrapTextNode(`${prefix}-${item.id}-summary`, {
+      style: TEXT_STYLES.mobileBullet,
+      value: item.summary,
+      width: config.summaryWidth,
+      x: config.x,
+      y: currentY,
+    });
+    nodes.push(node);
+    currentY += node.height + config.gap;
+  }
+
+  return nodes;
 }
 
 function buildSectionHeading(
@@ -444,6 +504,13 @@ function createLayout(
       CanvasNode
     >,
   };
+}
+
+function getNodesBottom(nodes: readonly CanvasNode[]): number {
+  return nodes.reduce(
+    (maxBottom, node) => Math.max(maxBottom, node.y + node.height),
+    0,
+  );
 }
 
 function createTextStyle(

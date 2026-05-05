@@ -23,3 +23,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-sour-gummy), sans-serif;
 }
+
+.figfolio-cursor {
+  cursor: url("/red-cursor.svg") 4 3, auto;
+}

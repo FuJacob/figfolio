@@ -22,7 +22,7 @@ export function CanvasNodeFrame({
 
   return (
     <div
-      className="absolute cursor-grab select-none overflow-visible text-slate-950 active:cursor-grabbing"
+      className="absolute select-none overflow-visible text-slate-950"
       onPointerCancel={interaction.handleNodePointerUp}
       onPointerDown={interaction.handleNodePointerDown}
       onPointerMove={interaction.handleNodePointerMove}
