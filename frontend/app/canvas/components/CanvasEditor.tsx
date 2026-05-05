@@ -35,13 +35,13 @@ export function CanvasEditor() {
         className="relative h-screen w-screen overflow-auto bg-slate-50"
         onPointerDown={clearSelection}
       >
-        <CanvasGrid />
         <div
-          className="relative z-10 w-full"
+          className="relative w-full"
           style={{ minHeight: viewport.scrollHeight }}
         >
+          <CanvasGrid />
           <div
-            className="absolute left-0 top-0 origin-top-left overflow-visible"
+            className="absolute left-0 top-0 z-10 origin-top-left overflow-visible"
             style={{
               height: layout.frame.height,
               transform: `translate(${viewport.offsetX}px, ${viewport.offsetY}px) scale(${viewport.scale})`,

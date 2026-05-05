@@ -8,12 +8,15 @@ const MIN_GRID_DOT_SIZE = 1;
 export function CanvasGrid() {
   const viewport = useCanvasViewport();
   const scaledGridSize = GRID_SIZE * viewport.scale;
-  const scaledDotSize = Math.max(GRID_DOT_SIZE * viewport.scale, MIN_GRID_DOT_SIZE);
+  const scaledDotSize = Math.max(
+    GRID_DOT_SIZE * viewport.scale,
+    MIN_GRID_DOT_SIZE,
+  );
 
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none fixed inset-0"
+      className="pointer-events-none absolute inset-0"
       style={{
         backgroundImage: `radial-gradient(${GRID_DOT_COLOR} ${scaledDotSize}px, transparent ${scaledDotSize}px)`,
         backgroundSize: `${scaledGridSize}px ${scaledGridSize}px`,
