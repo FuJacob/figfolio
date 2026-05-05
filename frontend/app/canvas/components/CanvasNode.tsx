@@ -12,9 +12,7 @@ type CanvasNodeProps = {
  * node renderer for that record type.
  */
 export function CanvasNode({ nodeId }: CanvasNodeProps) {
-  const node = useCanvasStore(
-    (state) => state.layouts[state.activeLayout].nodes[nodeId],
-  );
+  const node = useCanvasStore((state) => state.layout.nodes[nodeId]);
   const isSelected = useCanvasStore((state) => state.selectedNodeId === nodeId);
 
   if (!node) {

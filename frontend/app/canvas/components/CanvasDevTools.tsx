@@ -11,13 +11,8 @@ const STATUS_RESET_MS = 2400;
  * the visual editor is acting as the source of truth.
  */
 export function CanvasDevTools() {
-  const activeLayout = useCanvasStore((state) => state.activeLayout);
-  const activeLayoutData = useCanvasStore(
-    (state) => state.layouts[state.activeLayout],
-  );
-  const layouts = useCanvasStore((state) => state.layouts);
-  const resetActiveLayout = useCanvasStore((state) => state.resetActiveLayout);
-  const resetAllLayouts = useCanvasStore((state) => state.resetAllLayouts);
+  const layout = useCanvasStore((state) => state.layout);
+  const resetLayout = useCanvasStore((state) => state.resetLayout);
   const [status, setStatus] = useState<string | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
@@ -34,23 +29,18 @@ export function CanvasDevTools() {
   }
 
   async function handleCopyActiveLayout() {
-    await copyText(serializeLayout(activeLayoutData));
-    showStatus(`Copied ${activeLayout} layout`);
+    await copyText(serializeLayout(layout));
+    showStatus("Copied layout");
   }
 
   async function handleCopyPresetModule() {
-    await copyText(serializeLayoutPresetsModule(layouts));
+    await copyText(serializeLayoutPresetsModule(layout));
     showStatus("Copied preset module");
   }
 
-  function handleResetActiveLayout() {
-    resetActiveLayout();
-    showStatus(`Reset ${activeLayout} layout`);
-  }
-
-  function handleResetAllLayouts() {
-    resetAllLayouts();
-    showStatus("Reset both layouts");
+  function handleResetLayout() {
+    resetLayout();
+    showStatus("Reset layout");
   }
 
   function showStatus(nextStatus: string) {
@@ -76,7 +66,7 @@ export function CanvasDevTools() {
           onClick={handleCopyActiveLayout}
           type="button"
         >
-          Copy {activeLayout}
+          Copy Layout
         </button>
         <button
           className="rounded-xl border border-slate-200 px-3 py-2 text-left text-sm font-medium text-slate-900 transition hover:border-slate-300 hover:bg-slate-50"
@@ -87,17 +77,10 @@ export function CanvasDevTools() {
         </button>
         <button
           className="rounded-xl border border-slate-200 px-3 py-2 text-left text-sm font-medium text-slate-900 transition hover:border-slate-300 hover:bg-slate-50"
-          onClick={handleResetActiveLayout}
+          onClick={handleResetLayout}
           type="button"
         >
-          Reset {activeLayout}
-        </button>
-        <button
-          className="rounded-xl border border-slate-200 px-3 py-2 text-left text-sm font-medium text-slate-900 transition hover:border-slate-300 hover:bg-slate-50"
-          onClick={handleResetAllLayouts}
-          type="button"
-        >
-          Reset Both
+          Reset Layout
         </button>
       </div>
       <div className="mt-2 min-h-5 text-xs text-slate-500">

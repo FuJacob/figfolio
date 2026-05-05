@@ -1,6 +1,5 @@
 export type CanvasNodeId = string;
 export type NodeType = "text" | "image";
-export type LayoutMode = "mobile" | "desktop";
 export type ImageFitMode = "contain" | "cover";
 export type TextSizingMode = "fixed" | "hug" | "wrap";
 export type TextAlignMode = "left" | "right";
@@ -60,8 +59,6 @@ export type CanvasLayout = {
   nodeIds: CanvasNodeId[];
   nodes: Record<CanvasNodeId, CanvasNode>;
 };
-
-export type CanvasLayouts = Record<LayoutMode, CanvasLayout>;
 
 export type CanvasViewportTransform = {
   offsetX: number;

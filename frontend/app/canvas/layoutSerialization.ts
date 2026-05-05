@@ -1,4 +1,4 @@
-import type { CanvasLayout, CanvasLayouts, CanvasNode } from "./types";
+import type { CanvasLayout, CanvasNode } from "./types";
 
 /**
  * Returns a deterministic layout object with node records ordered by render
@@ -24,15 +24,11 @@ export function serializeLayout(layout: CanvasLayout): string {
   return JSON.stringify(normalizeLayout(layout), null, 2);
 }
 
-export function serializeLayoutPresetsModule(layouts: CanvasLayouts): string {
-  const desktopLayout = serializeLayout(layouts.desktop);
-  const mobileLayout = serializeLayout(layouts.mobile);
-
+export function serializeLayoutPresetsModule(layout: CanvasLayout): string {
+  const serializedLayout = serializeLayout(layout);
   return `import type { CanvasLayout, CanvasNode, CanvasNodeId } from "./types";
 
-const DESKTOP_LAYOUT: CanvasLayout = ${desktopLayout};
-
-const MOBILE_LAYOUT: CanvasLayout = ${mobileLayout};
+const LAYOUT_PRESET: CanvasLayout = ${serializedLayout};
 
 /**
  * Clones a layout preset so editing session state cannot mutate the authored
@@ -52,10 +48,7 @@ function cloneNode(node: CanvasNode): CanvasNode {
   return { ...node };
 }
 
-export const LAYOUT_PRESETS = {
-  desktop: DESKTOP_LAYOUT,
-  mobile: MOBILE_LAYOUT,
-} as const;
+export { LAYOUT_PRESET };
 `;
 }
 

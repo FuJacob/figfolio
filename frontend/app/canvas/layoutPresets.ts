@@ -78,11 +78,6 @@ type ProjectsLayoutConfig = {
   x: number;
 };
 
-type DesktopProjectsLayoutConfig = ProjectsLayoutConfig & {
-  ctaRightEdge: number;
-  showCta: true;
-};
-
 type MobileProjectsLayoutConfig = ProjectsLayoutConfig & {
   showCta: false;
 };
@@ -101,34 +96,6 @@ const DEFAULT_TEXT_STYLE: TextStyleToken = {
 };
 
 const TEXT_STYLES = {
-  desktopBody: createTextStyle({
-    fontSize: 19,
-    fontWeight: 500,
-  }),
-  desktopEyebrow: createTextStyle({
-    fontSize: 34,
-    fontWeight: 500,
-  }),
-  desktopHeroName: createTextStyle({
-    fontSize: 92,
-    fontWeight: 600,
-  }),
-  desktopProject: createTextStyle({
-    fontSize: 22,
-    fontWeight: 500,
-  }),
-  desktopProjectCta: createTextStyle({
-    fontSize: 20,
-    fontWeight: 500,
-  }),
-  desktopSection: createTextStyle({
-    fontSize: 32,
-    fontWeight: 500,
-  }),
-  desktopTitle: createTextStyle({
-    fontSize: 22,
-    fontWeight: 600,
-  }),
   mobileBody: createTextStyle({
     fontSize: 15,
     fontWeight: 500,
@@ -209,86 +176,13 @@ const PROJECT_ITEMS: readonly ProjectItem[] = [
   },
 ] as const;
 
-const DESKTOP_FRAME = {
-  width: 1440,
-  height: 1600,
-} as const;
-
 const MOBILE_FRAME = {
   width: 390,
   height: 780,
 } as const;
+const LAYOUT_PRESET = buildLayout();
 
-const DESKTOP_LAYOUT = buildDesktopLayout();
-const MOBILE_LAYOUT = buildMobileLayout();
-
-function buildDesktopLayout(): CanvasLayout {
-  const nodes = [
-    ...buildIntroSection("desktop", {
-      greetingX: 360,
-      greetingY: 86,
-      heroHeight: 300,
-      heroWidth: 300,
-      heroX: 896,
-      heroY: 52,
-      nameHeight: 120,
-      nameWidth: 360,
-      nameX: 360,
-      nameY: 147,
-    }),
-    ...buildSectionHeading("desktop-study-heading", {
-      style: TEXT_STYLES.desktopSection,
-      value: "I study @",
-      x: 360,
-      y: 406,
-    }),
-    ...buildEducationSection("desktop", {
-      imageSize: 72,
-      imageX: 360,
-      labelWidth: 439,
-      leftX: 456,
-      rightColumnWidth: 160,
-      rightEdge: 1075,
-      roleOffsetY: 37,
-      rowY: 469,
-    }),
-    ...buildSectionHeading("desktop-work-heading", {
-      style: TEXT_STYLES.desktopSection,
-      value: "I work/worked @",
-      x: 360,
-      y: 595,
-    }),
-    ...buildWorkSection("desktop", {
-      imageSize: 72,
-      labelX: 456,
-      leftX: 360,
-      locationOffsetY: 33,
-      rightColumnWidth: 160,
-      rightEdge: 1075,
-      roleOffsetY: 51,
-      rowGap: 102,
-      startY: 658,
-    }),
-    ...buildSectionHeading("desktop-built-heading", {
-      style: TEXT_STYLES.desktopSection,
-      value: "I've built",
-      x: 360,
-      y: 1092,
-    }),
-    ...buildProjectsSection("desktop", {
-      ctaRightEdge: 1069,
-      rowGap: 55,
-      showCta: true,
-      startY: 1155,
-      summaryWidth: 622,
-      x: 360,
-    }),
-  ];
-
-  return createLayout(DESKTOP_FRAME, nodes);
-}
-
-function buildMobileLayout(): CanvasLayout {
+function buildLayout(): CanvasLayout {
   const nodes = [
     ...buildIntroSection("mobile", {
       greetingX: 20,
@@ -354,24 +248,19 @@ function buildMobileLayout(): CanvasLayout {
 }
 
 function buildIntroSection(
-  prefix: "desktop" | "mobile",
+  prefix: "mobile",
   config: IntroLayoutConfig,
 ): CanvasNode[] {
-  const eyebrowStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopEyebrow : TEXT_STYLES.mobileEyebrow;
-  const heroNameStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopHeroName : TEXT_STYLES.mobileHeroName;
-
   return [
     createHugTextNode(`${prefix}-greeting`, {
-      style: eyebrowStyle,
+      style: TEXT_STYLES.mobileEyebrow,
       value: "Hey there, I'm",
       x: config.greetingX,
       y: config.greetingY,
     }),
     createFixedTextNode(`${prefix}-name`, {
       height: config.nameHeight,
-      style: heroNameStyle,
+      style: TEXT_STYLES.mobileHeroName,
       value: "Jacob Fu",
       width: config.nameWidth,
       x: config.nameX,
@@ -390,44 +279,39 @@ function buildIntroSection(
 }
 
 function buildEducationSection(
-  prefix: "desktop" | "mobile",
+  prefix: "mobile",
   config: EducationLayoutConfig,
 ): CanvasNode[] {
-  const titleStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopTitle : TEXT_STYLES.mobileTitle;
-  const bodyStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopBody : TEXT_STYLES.mobileBody;
-
   const labelNode = createWrapTextNode(`${prefix}-education-waterloo-label`, {
-    style: titleStyle,
+    style: TEXT_STYLES.mobileTitle,
     value: "University of Waterloo",
     width: config.labelWidth,
     x: config.leftX,
     y: config.rowY,
   });
   const roleNode = createHugTextNode(`${prefix}-education-waterloo-role`, {
-    style: bodyStyle,
+    style: TEXT_STYLES.mobileBody,
     value: "Computer Science",
     x: config.leftX,
     y: config.rowY + config.roleOffsetY,
   });
   const yearNode = createRightAlignedTextNode(
     `${prefix}-education-waterloo-year`,
-      {
-        columnWidth: config.rightColumnWidth,
-        rightEdge: config.rightEdge,
-        style: bodyStyle,
-        value: "2028",
+    {
+      columnWidth: config.rightColumnWidth,
+      rightEdge: config.rightEdge,
+      style: TEXT_STYLES.mobileBody,
+      value: "2028",
       y: config.rowY,
     },
   );
   const locationNode = createRightAlignedTextNode(
     `${prefix}-education-waterloo-location`,
-      {
-        columnWidth: config.rightColumnWidth,
-        rightEdge: config.rightEdge,
-        style: bodyStyle,
-        value: "Waterloo, ON",
+    {
+      columnWidth: config.rightColumnWidth,
+      rightEdge: config.rightEdge,
+      style: TEXT_STYLES.mobileBody,
+      value: "Waterloo, ON",
       y: config.rowY + config.roleOffsetY,
     },
   );
@@ -450,24 +334,19 @@ function buildEducationSection(
 }
 
 function buildWorkSection(
-  prefix: "desktop" | "mobile",
+  prefix: "mobile",
   config: WorkLayoutConfig,
 ): CanvasNode[] {
-  const titleStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopTitle : TEXT_STYLES.mobileTitle;
-  const bodyStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopBody : TEXT_STYLES.mobileBody;
-
   return WORK_ITEMS.flatMap((item, index) => {
     const rowY = config.startY + config.rowGap * index;
     const labelNode = createHugTextNode(`${prefix}-work-${item.id}-label`, {
-      style: titleStyle,
+      style: TEXT_STYLES.mobileTitle,
       value: item.company,
       x: config.labelX,
       y: rowY,
     });
     const roleNode = createHugTextNode(`${prefix}-work-${item.id}-role`, {
-      style: bodyStyle,
+      style: TEXT_STYLES.mobileBody,
       value: item.role,
       x: config.labelX,
       y: rowY + config.roleOffsetY,
@@ -477,7 +356,7 @@ function buildWorkSection(
       {
         columnWidth: config.rightColumnWidth,
         rightEdge: config.rightEdge,
-        style: bodyStyle,
+        style: TEXT_STYLES.mobileBody,
         value: item.year,
         y: rowY,
       },
@@ -487,7 +366,7 @@ function buildWorkSection(
       {
         columnWidth: config.rightColumnWidth,
         rightEdge: config.rightEdge,
-        style: bodyStyle,
+        style: TEXT_STYLES.mobileBody,
         value: item.location,
         y: rowY + config.locationOffsetY,
       },
@@ -512,27 +391,15 @@ function buildWorkSection(
 }
 
 function buildProjectsSection(
-  prefix: "desktop",
-  config: DesktopProjectsLayoutConfig,
-): CanvasNode[];
-function buildProjectsSection(
   prefix: "mobile",
   config: MobileProjectsLayoutConfig,
-): CanvasNode[];
-function buildProjectsSection(
-  prefix: "desktop" | "mobile",
-  config: DesktopProjectsLayoutConfig | MobileProjectsLayoutConfig,
 ): CanvasNode[] {
-  const summaryStyle =
-    prefix === "desktop" ? TEXT_STYLES.desktopProject : TEXT_STYLES.mobileProject;
-  const ctaStyle = TEXT_STYLES.desktopProjectCta;
-
   return PROJECT_ITEMS.flatMap((item, index) => {
     const rowY = config.startY + config.rowGap * index;
     const summaryNode = createWrapTextNode(
       `${prefix}-project-${item.id}-summary`,
       {
-        style: summaryStyle,
+        style: TEXT_STYLES.mobileProject,
         value: item.summary,
         width: config.summaryWidth,
         x: config.x,
@@ -543,15 +410,6 @@ function buildProjectsSection(
     if (!config.showCta) {
       return [summaryNode];
     }
-
-    const ctaNode = createRightAlignedTextNode(`${prefix}-project-${item.id}-cta`, {
-      rightEdge: config.ctaRightEdge,
-      style: ctaStyle,
-      value: "GitHub",
-      y: rowY,
-    });
-
-    return [summaryNode, ctaNode];
   });
 }
 
@@ -792,7 +650,4 @@ function cloneNode(node: CanvasNode): CanvasNode {
   return { ...node };
 }
 
-export const LAYOUT_PRESETS = {
-  desktop: DESKTOP_LAYOUT,
-  mobile: MOBILE_LAYOUT,
-} as const;
+export { LAYOUT_PRESET };

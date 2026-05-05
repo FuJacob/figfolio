@@ -35,8 +35,7 @@ type AnimatedFakeCursor = FakeCursorAgent & {
  * random positions inside the current node bounds.
  */
 export function FakeCursorOverlay() {
-  const activeLayout = useCanvasStore((state) => state.activeLayout);
-  const layout = useCanvasStore((state) => state.layouts[state.activeLayout]);
+  const layout = useCanvasStore((state) => state.layout);
   const layoutRef = useRef(layout);
   const frameIdRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number | null>(null);
@@ -58,7 +57,7 @@ export function FakeCursorOverlay() {
     animatedCursorsRef.current = nextAnimatedCursors;
     lastFrameTimeRef.current = null;
     setAnimatedCursors(nextAnimatedCursors);
-  }, [activeLayout]);
+  }, []);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -142,7 +141,7 @@ export function FakeCursorOverlay() {
       }
       lastFrameTimeRef.current = null;
     };
-  }, [activeLayout]);
+  }, []);
 
   if (animatedCursors.length === 0) {
     return null;

@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CanvasViewportProvider } from "../CanvasViewportContext";
 import { useCanvasViewportTransform } from "../hooks/useCanvasViewportTransform";
-import { useResponsiveLayoutMode } from "../hooks/useResponsiveLayoutMode";
 import { useCanvasStore } from "../store";
 import { CanvasDevTools } from "./CanvasDevTools";
 import { CanvasGrid } from "./CanvasGrid";
@@ -15,20 +14,12 @@ import { SocialDock } from "./SocialDock";
 export function CanvasEditor() {
   const [showDevTools, setShowDevTools] = useState(false);
   const handleDevToolsOpen = () => setShowDevTools(true);
-  const layoutMode = useResponsiveLayoutMode();
-  const layout = useCanvasStore((state) => state.layouts[state.activeLayout]);
+  const layout = useCanvasStore((state) => state.layout);
   const clearSelection = useCanvasStore((state) => state.clearSelection);
   const selectedNode = useCanvasStore((state) =>
-    state.selectedNodeId
-      ? (state.layouts[state.activeLayout].nodes[state.selectedNodeId] ?? null)
-      : null,
+    state.selectedNodeId ? (state.layout.nodes[state.selectedNodeId] ?? null) : null,
   );
-  const setActiveLayout = useCanvasStore((state) => state.setActiveLayout);
   const viewport = useCanvasViewportTransform(layout.frame);
-
-  useEffect(() => {
-    setActiveLayout(layoutMode);
-  }, [layoutMode, setActiveLayout]);
 
   return (
     <CanvasViewportProvider value={viewport}>
